@@ -15,6 +15,7 @@ function LoginForm() {
   const [password, setPassword] = useState('')
   const [error, setError] = useState(urlError || '')
   const [loading, setLoading] = useState(false)
+  const [kakaoLoading, setKakaoLoading] = useState(false)
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -34,6 +35,25 @@ function LoginForm() {
     router.refresh()
   }
 
+  const handleKakaoLogin = async () => {
+    setKakaoLoading(true)
+    setError('')
+
+    const supabase = createClient()
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: 'kakao',
+      options: {
+        redirectTo: `${window.location.origin}/auth/callback`,
+      },
+    })
+
+    if (error) {
+      setError('카카오 로그인에 실패했습니다. 다시 시도해 주세요.')
+      setKakaoLoading(false)
+    }
+    // On success, browser follows the OAuth redirect
+  }
+
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
       <div className="w-full max-w-md">
@@ -49,6 +69,25 @@ function LoginForm() {
             </div>
           )}
 
+          {/* Kakao login */}
+          <button
+            type="button"
+            onClick={handleKakaoLogin}
+            disabled={kakaoLoading || loading}
+            className="w-full flex items-center justify-center gap-2.5 py-2.5 rounded-lg text-sm font-semibold disabled:opacity-50 transition-opacity"
+            style={{ backgroundColor: '#FEE500', color: '#191919' }}
+          >
+            <KakaoIcon />
+            {kakaoLoading ? '연결 중...' : '카카오로 로그인'}
+          </button>
+
+          <div className="flex items-center my-5">
+            <div className="flex-1 h-px bg-gray-200" />
+            <span className="px-3 text-xs text-gray-400">또는</span>
+            <div className="flex-1 h-px bg-gray-200" />
+          </div>
+
+          {/* Email login */}
           <form onSubmit={handleLogin} className="space-y-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">이메일</label>
@@ -76,10 +115,10 @@ function LoginForm() {
 
             <button
               type="submit"
-              disabled={loading}
+              disabled={loading || kakaoLoading}
               className="w-full py-2.5 bg-[#2563EB] text-white rounded-lg text-sm font-medium hover:opacity-90 disabled:opacity-50 transition-opacity"
             >
-              {loading ? '로그인 중...' : '로그인'}
+              {loading ? '로그인 중...' : '이메일로 로그인'}
             </button>
           </form>
 
@@ -92,6 +131,19 @@ function LoginForm() {
         </div>
       </div>
     </div>
+  )
+}
+
+function KakaoIcon() {
+  return (
+    <svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path
+        fillRule="evenodd"
+        clipRule="evenodd"
+        d="M9 1.5C4.858 1.5 1.5 4.134 1.5 7.368c0 2.07 1.305 3.888 3.285 4.944l-.84 3.132a.188.188 0 0 0 .288.204l3.648-2.412c.36.048.726.072 1.119.072 4.142 0 7.5-2.634 7.5-5.868C16.5 4.134 13.142 1.5 9 1.5Z"
+        fill="#191919"
+      />
+    </svg>
   )
 }
 

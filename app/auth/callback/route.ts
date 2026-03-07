@@ -10,7 +10,6 @@ export async function GET(request: Request) {
     return NextResponse.redirect(`${origin}/auth/login?error=auth_callback_failed`)
   }
 
-  // 세션 쿠키를 나중에 응답에 주입하기 위해 수집
   const cookiesToApply: { name: string; value: string; options: Record<string, unknown> }[] = []
 
   const supabase = createServerClient(
@@ -19,13 +18,15 @@ export async function GET(request: Request) {
     {
       cookies: {
         getAll() {
-          return request.headers
-            .get('cookie')
-            ?.split('; ')
-            .map((c) => {
-              const [name, ...rest] = c.split('=')
-              return { name: name.trim(), value: rest.join('=') }
-            }) ?? []
+          return (
+            request.headers
+              .get('cookie')
+              ?.split('; ')
+              .map(c => {
+                const [name, ...rest] = c.split('=')
+                return { name: name.trim(), value: rest.join('=') }
+              }) ?? []
+          )
         },
         setAll(cookies) {
           cookies.forEach(({ name, value, options }) => {
@@ -42,24 +43,35 @@ export async function GET(request: Request) {
     return NextResponse.redirect(`${origin}/auth/login?error=auth_callback_failed`)
   }
 
-  // 이동할 URL 결정
+  // Determine redirect based on profile completeness and role
   let redirectTo = `${origin}${next}`
-  const { data: { user } } = await supabase.auth.getUser()
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+
   if (user) {
     const { data: profile } = await supabase
       .from('profiles')
-      .select('role')
+      .select('role, phone, full_name, auth_provider')
       .eq('id', user.id)
       .single()
 
-    if (profile?.role === 'employer') {
-      redirectTo = `${origin}/company/profile`
-    } else if (profile?.role === 'job_seeker') {
-      redirectTo = `${origin}/profile`
+    if (profile) {
+      // Social auth users missing phone → send to onboarding completion
+      const needsOnboarding =
+        profile.auth_provider === 'kakao' && !profile.phone
+
+      if (needsOnboarding) {
+        redirectTo = `${origin}/auth/onboarding`
+      } else if (profile.role === 'employer') {
+        redirectTo = `${origin}/company/profile`
+      } else if (profile.role === 'job_seeker') {
+        redirectTo = `${origin}/profile`
+      }
     }
   }
 
-  // 세션 쿠키를 redirect 응답에 직접 첨부
   const response = NextResponse.redirect(redirectTo)
   cookiesToApply.forEach(({ name, value, options }) => {
     response.cookies.set(name, value, options as Parameters<typeof response.cookies.set>[2])

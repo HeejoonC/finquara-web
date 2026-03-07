@@ -3,12 +3,15 @@
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
+import dynamic from 'next/dynamic'
 import {
   MAIN_SPECIALIZATIONS,
   DETAILED_SPECIALTIES,
   EXPERIENCE_LEVELS,
   EMPLOYMENT_TYPES,
 } from '@/lib/constants/actuary'
+
+const RichTextEditor = dynamic(() => import('@/components/ui/RichTextEditor'), { ssr: false })
 
 const WORKPLACE_TYPES = ['대면 근무', '원격 근무', '하이브리드'] as const
 
@@ -21,6 +24,7 @@ export default function PostJobPage() {
   const [message, setMessage] = useState('')
   const [displayName, setDisplayName] = useState('')
   const [ownerId, setOwnerId] = useState('')
+  const [showPreview, setShowPreview] = useState(false)
 
   const [form, setForm] = useState({
     title: '',
@@ -30,10 +34,8 @@ export default function PostJobPage() {
     employment_type: '',
     salary_range: '',
     apply_url: '',
-    duties: '',
-    requirements: '',
-    preferred: '',
-    benefits: '',
+    contact_info: '',
+    description: '',
   })
   const [mainSpecializations, setMainSpecializations] = useState<string[]>([])
   const [detailedSpecialties, setDetailedSpecialties] = useState<string[]>([])
@@ -104,14 +106,6 @@ export default function PostJobPage() {
     const locationParts = [form.location, form.workplace_type].filter(Boolean)
     const combinedLocation = locationParts.join(' · ')
 
-    const sections = [
-      form.duties && `[업무 내용]\n${form.duties}`,
-      form.requirements && `[자격 요건]\n${form.requirements}`,
-      form.preferred && `[우대 사항]\n${form.preferred}`,
-      form.benefits && `[복지 및 혜택]\n${form.benefits}`,
-    ].filter(Boolean)
-    const description = sections.join('\n\n')
-
     const { error } = await supabase.from('jobs').insert({
       title: form.title,
       company: displayName,
@@ -119,8 +113,9 @@ export default function PostJobPage() {
       experience_level: form.experience_level || null,
       employment_type: form.employment_type || null,
       salary_range: form.salary_range || null,
-      description: description || null,
+      description: form.description || null,
       apply_url: form.apply_url || null,
+      contact_info: form.contact_info || null,
       owner_id: ownerId,
       main_specializations: mainSpecializations,
       detailed_specialties: detailedSpecialties,
@@ -139,10 +134,8 @@ export default function PostJobPage() {
         employment_type: '',
         salary_range: '',
         apply_url: '',
-        duties: '',
-        requirements: '',
-        preferred: '',
-        benefits: '',
+        contact_info: '',
+        description: '',
       })
       setMainSpecializations([])
       setDetailedSpecialties([])
@@ -159,7 +152,7 @@ export default function PostJobPage() {
   }
 
   return (
-    <div className="max-w-2xl mx-auto px-6 py-10">
+    <div className="max-w-3xl mx-auto px-6 py-10">
       <div className="mb-8">
         <h1 className="text-2xl font-bold text-[#0B1F3A]">채용공고 등록</h1>
         <p className="text-gray-500 text-sm mt-1">
@@ -287,46 +280,60 @@ export default function PostJobPage() {
           </div>
         </Section>
 
-        {/* 4. 직무 설명 */}
-        <Section step="4" title="직무 설명">
-          <TextareaField
-            label="업무 내용"
-            value={form.duties}
-            onChange={v => update('duties', v)}
-            placeholder="주요 업무와 책임을 구체적으로 입력해 주세요."
-            rows={4}
-          />
-          <TextareaField
-            label="자격 요건"
-            value={form.requirements}
-            onChange={v => update('requirements', v)}
-            placeholder="필수 자격 요건을 입력해 주세요. (예: 계리사 자격증, 관련 경력 등)"
-            rows={4}
-          />
-          <TextareaField
-            label="우대 사항"
-            value={form.preferred}
-            onChange={v => update('preferred', v)}
-            placeholder="우대하는 역량이나 경험을 입력해 주세요."
-            rows={3}
-          />
-          <TextareaField
-            label="복지 및 혜택"
-            value={form.benefits}
-            onChange={v => update('benefits', v)}
-            placeholder="복리후생, 혜택 등을 입력해 주세요."
-            rows={3}
-          />
+        {/* 4. 모집 요강 */}
+        <Section step="4" title="모집 요강">
+          <div className="flex items-center justify-between mb-2">
+            <p className="text-xs text-gray-400">
+              업무내용, 자격요건, 우대사항, 복지 등 자유롭게 작성하세요. 이미지도 삽입 가능합니다.
+            </p>
+            <button
+              type="button"
+              onClick={() => setShowPreview(v => !v)}
+              className="text-xs px-3 py-1.5 border border-[#2563EB] text-[#2563EB] rounded-lg hover:bg-blue-50 transition-colors flex-shrink-0 ml-3"
+            >
+              {showPreview ? '편집으로 돌아가기' : '미리보기'}
+            </button>
+          </div>
+
+          {showPreview ? (
+            <div className="border border-gray-200 rounded-lg p-5 bg-white min-h-[400px]">
+              <h3 className="text-sm font-semibold text-gray-500 mb-3 border-b pb-2">
+                미리보기 — 공고에 표시되는 모습
+              </h3>
+              {form.description && form.description !== '<p></p>' ? (
+                <div
+                  className="prose prose-sm max-w-none text-gray-800"
+                  dangerouslySetInnerHTML={{ __html: form.description }}
+                />
+              ) : (
+                <p className="text-gray-400 text-sm">내용을 입력하면 여기에 미리보기가 표시됩니다.</p>
+              )}
+            </div>
+          ) : (
+            <RichTextEditor
+              value={form.description}
+              onChange={v => update('description', v)}
+              placeholder="업무 내용, 자격 요건, 우대 사항, 복지 및 혜택 등을 자유롭게 입력하세요."
+            />
+          )}
         </Section>
 
         {/* 5. 지원 방법 */}
         <Section step="5" title="지원 방법">
-          <TextField
-            label="지원 링크"
-            value={form.apply_url}
-            onChange={v => update('apply_url', v)}
-            placeholder="https://..."
-          />
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <TextField
+              label="지원 링크"
+              value={form.apply_url}
+              onChange={v => update('apply_url', v)}
+              placeholder="https://..."
+            />
+            <TextField
+              label="담당자 및 연락처"
+              value={form.contact_info}
+              onChange={v => update('contact_info', v)}
+              placeholder="예: 홍길동 / recruit@example.com"
+            />
+          </div>
           <p className="text-xs text-gray-400">
             외부 채용 링크(잡코리아, 사람인, 회사 채용 페이지 등)를 입력해 주세요.
           </p>
@@ -430,33 +437,6 @@ function SelectField({
           </option>
         ))}
       </select>
-    </div>
-  )
-}
-
-function TextareaField({
-  label,
-  value,
-  onChange,
-  placeholder,
-  rows,
-}: {
-  label: string
-  value: string
-  onChange: (v: string) => void
-  placeholder?: string
-  rows?: number
-}) {
-  return (
-    <div>
-      <label className="block text-sm font-medium text-gray-700 mb-1">{label}</label>
-      <textarea
-        value={value}
-        onChange={e => onChange(e.target.value)}
-        placeholder={placeholder}
-        rows={rows ?? 4}
-        className="w-full px-4 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#2563EB] focus:border-transparent resize-none"
-      />
     </div>
   )
 }

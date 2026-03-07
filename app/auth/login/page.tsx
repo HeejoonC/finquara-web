@@ -8,7 +8,7 @@ import { createClient } from '@/lib/supabase/client'
 function LoginForm() {
   const router = useRouter()
   const searchParams = useSearchParams()
-  const redirectTo = searchParams.get('redirectTo') || '/'
+  const redirectTo = searchParams.get('redirectTo') || '/jobs'
   const urlError = searchParams.get('error')
 
   const [email, setEmail] = useState('')
@@ -112,6 +112,12 @@ function LoginForm() {
                 className="w-full px-4 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#2563EB] focus:border-transparent"
                 placeholder="••••••••"
               />
+            </div>
+
+            <div className="flex justify-end">
+              <Link href="/auth/forgot-password" className="text-xs text-gray-400 hover:text-[#2563EB]">
+                비밀번호 찾기
+              </Link>
             </div>
 
             <button

@@ -46,28 +46,30 @@ export async function GET(request: Request) {
   // Determine redirect based on profile completeness and role
   let redirectTo = `${origin}${next}`
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
+  // For auth flows (password reset etc.), skip profile-based redirect
+  if (!next.startsWith('/auth/')) {
+    const {
+      data: { user },
+    } = await supabase.auth.getUser()
 
-  if (user) {
-    const { data: profile } = await supabase
-      .from('profiles')
-      .select('role, phone, full_name, auth_provider')
-      .eq('id', user.id)
-      .single()
+    if (user) {
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('role, phone, full_name, auth_provider')
+        .eq('id', user.id)
+        .single()
 
-    if (profile) {
-      // Social auth users missing phone → send to onboarding completion
-      const needsOnboarding =
-        profile.auth_provider === 'kakao' && !profile.phone
+      if (profile) {
+        const needsOnboarding =
+          profile.auth_provider === 'kakao' && !profile.phone
 
-      if (needsOnboarding) {
-        redirectTo = `${origin}/auth/onboarding`
-      } else if (profile.role === 'employer') {
-        redirectTo = `${origin}/company/profile`
-      } else if (profile.role === 'job_seeker') {
-        redirectTo = `${origin}/profile`
+        if (needsOnboarding) {
+          redirectTo = `${origin}/auth/onboarding`
+        } else if (profile.role === 'employer') {
+          redirectTo = `${origin}/company/profile`
+        } else {
+          redirectTo = `${origin}/jobs`
+        }
       }
     }
   }

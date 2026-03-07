@@ -3,17 +3,24 @@ import { createClient } from '@/lib/supabase/server'
 import SignOutButton from './SignOutButton'
 
 export default async function Navbar() {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-
+  let user = null
   let profile = null
-  if (user) {
-    const { data } = await supabase
-      .from('profiles')
-      .select('role, full_name')
-      .eq('id', user.id)
-      .single()
-    profile = data
+
+  try {
+    const supabase = await createClient()
+    const { data } = await supabase.auth.getUser()
+    user = data.user
+
+    if (user) {
+      const { data: profileData } = await supabase
+        .from('profiles')
+        .select('role, full_name')
+        .eq('id', user.id)
+        .single()
+      profile = profileData
+    }
+  } catch {
+    // Supabase 오류 시 비로그인 상태로 표시
   }
 
   const profileHref = profile?.role === 'employer' ? '/company/profile' : '/profile'

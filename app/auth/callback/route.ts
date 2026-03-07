@@ -65,6 +65,8 @@ export async function GET(request: Request) {
 
         if (needsOnboarding) {
           redirectTo = `${origin}/auth/onboarding`
+        } else if (profile.role === 'admin') {
+          redirectTo = `${origin}/admin`
         } else if (profile.role === 'employer') {
           redirectTo = `${origin}/company/profile`
         } else {

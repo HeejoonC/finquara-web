@@ -128,7 +128,7 @@ export default async function JobsPage({ searchParams }: { searchParams: SearchP
             <span>분야</span>
             <span>경력</span>
             <span>고용형태</span>
-            <span className="text-right">등록일</span>
+            <span className="text-right">등록자 / 등록일</span>
           </div>
 
           {/* Table rows */}
@@ -187,11 +187,10 @@ export default async function JobsPage({ searchParams }: { searchParams: SearchP
                     </span>
                   </div>
 
-                  {/* 등록일 */}
+                  {/* 등록자 / 등록일 */}
                   <div className="text-right">
-                    <span className="text-xs text-gray-400 whitespace-nowrap">
-                      {formatDate(job.created_at)}
-                    </span>
+                    <p className="text-xs text-gray-600 whitespace-nowrap">{job.company}</p>
+                    <p className="text-xs text-gray-400 whitespace-nowrap mt-0.5">{formatDate(job.created_at)}</p>
                   </div>
                 </Link>
               )

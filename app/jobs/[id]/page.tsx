@@ -41,32 +41,10 @@ export default async function JobDetailPage({
 
       {/* Header card */}
       <div className="bg-white border border-gray-200 rounded-xl p-6 mb-4">
-        {/* Tags */}
-        {(displayMain.length > 0 || detailTags.length > 0) && (
-          <div className="flex flex-wrap gap-1.5 mb-3">
-            {displayMain.map(s => (
-              <span
-                key={s}
-                className="text-xs px-2 py-0.5 bg-blue-50 text-[#2563EB] rounded-full border border-blue-100"
-              >
-                {s}
-              </span>
-            ))}
-            {detailTags.map(s => (
-              <span
-                key={s}
-                className="text-xs px-2 py-0.5 bg-gray-100 text-gray-600 rounded-full"
-              >
-                {s}
-              </span>
-            ))}
-          </div>
-        )}
-
         {/* Title */}
         <h1 className="text-2xl font-bold text-[#0B1F3A] leading-snug">{job.title}</h1>
 
-        {/* Company / location / date */}
+        {/* Company / location / date / poster */}
         <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5 mt-2 text-sm text-gray-600">
           <span className="font-medium text-gray-800">{job.company}</span>
           {job.location && (
@@ -79,20 +57,70 @@ export default async function JobDetailPage({
           <span className="text-gray-400 text-xs">{postedDate} 등록</span>
         </div>
 
-        {/* Meta row */}
-        {(job.experience_level || job.employment_type || job.salary_range) && (
-          <div className="flex flex-wrap gap-4 mt-4 pt-4 border-t border-gray-100">
-            {job.experience_level && (
-              <MetaItem label="경력" value={job.experience_level} />
-            )}
-            {job.employment_type && (
-              <MetaItem label="고용형태" value={job.employment_type} />
-            )}
-            {job.salary_range && (
-              <MetaItem label="급여" value={job.salary_range} />
-            )}
-          </div>
-        )}
+        {/* 분야 / 경력 / 세부전문 */}
+        <div className="mt-4 pt-4 border-t border-gray-100 space-y-3">
+          {displayMain.length > 0 && (
+            <div className="flex items-start gap-3">
+              <span className="text-xs font-semibold text-gray-500 w-16 flex-shrink-0 pt-0.5">분야</span>
+              <div className="flex flex-wrap gap-1.5">
+                {displayMain.slice(0, 4).map(s => (
+                  <span key={s} className="text-xs px-2.5 py-1 bg-blue-50 text-[#2563EB] rounded-full border border-blue-100">
+                    {s}
+                  </span>
+                ))}
+              </div>
+            </div>
+          )}
+          {job.experience_level && (
+            <div className="flex items-center gap-3">
+              <span className="text-xs font-semibold text-gray-500 w-16 flex-shrink-0">경력</span>
+              <span className="text-sm text-gray-700">{job.experience_level}</span>
+              {job.employment_type && (
+                <>
+                  <span className="text-gray-300">·</span>
+                  <span className="text-xs font-semibold text-gray-500">고용형태</span>
+                  <span className="text-sm text-gray-700">{job.employment_type}</span>
+                </>
+              )}
+              {job.salary_range && (
+                <>
+                  <span className="text-gray-300">·</span>
+                  <span className="text-xs font-semibold text-gray-500">급여</span>
+                  <span className="text-sm text-gray-700">{job.salary_range}</span>
+                </>
+              )}
+            </div>
+          )}
+          {!job.experience_level && (job.employment_type || job.salary_range) && (
+            <div className="flex items-center gap-3">
+              {job.employment_type && (
+                <>
+                  <span className="text-xs font-semibold text-gray-500 w-16 flex-shrink-0">고용형태</span>
+                  <span className="text-sm text-gray-700">{job.employment_type}</span>
+                </>
+              )}
+              {job.salary_range && (
+                <>
+                  {job.employment_type && <span className="text-gray-300">·</span>}
+                  <span className="text-xs font-semibold text-gray-500">급여</span>
+                  <span className="text-sm text-gray-700">{job.salary_range}</span>
+                </>
+              )}
+            </div>
+          )}
+          {detailTags.length > 0 && (
+            <div className="flex items-start gap-3">
+              <span className="text-xs font-semibold text-gray-500 w-16 flex-shrink-0 pt-0.5">세부전문</span>
+              <div className="flex flex-wrap gap-1.5">
+                {detailTags.slice(0, 4).map(s => (
+                  <span key={s} className="text-xs px-2.5 py-1 bg-gray-100 text-gray-600 rounded-full">
+                    {s}
+                  </span>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
 
         {/* Contact info */}
         {(job as any).contact_info && (() => {

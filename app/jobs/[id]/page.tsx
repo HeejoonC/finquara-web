@@ -14,7 +14,6 @@ export default async function JobDetailPage({
     .from('jobs')
     .select('*')
     .eq('id', id)
-    .eq('is_published', true)
     .single()
 
   if (!job) notFound()
@@ -96,15 +95,29 @@ export default async function JobDetailPage({
         )}
 
         {/* Contact info */}
-        {(job as any).contact_info && (
-          <div className="mt-4 pt-4 border-t border-gray-100">
-            <p className="text-sm text-gray-500">
-              <span className="font-medium text-gray-700">담당자 · 연락처</span>
-              <span className="mx-2 text-gray-300">|</span>
-              {(job as any).contact_info}
-            </p>
-          </div>
-        )}
+        {(job as any).contact_info && (() => {
+          const parts = ((job as any).contact_info as string).split(' / ')
+          const email = parts[0] || ''
+          const phone = parts[1] || ''
+          return (
+            <div className="mt-4 pt-4 border-t border-gray-100 flex flex-wrap gap-4">
+              {email && (
+                <p className="text-sm text-gray-500">
+                  <span className="font-medium text-gray-700">담당자 이메일</span>
+                  <span className="mx-2 text-gray-300">|</span>
+                  {email}
+                </p>
+              )}
+              {phone && (
+                <p className="text-sm text-gray-500">
+                  <span className="font-medium text-gray-700">담당자 연락처</span>
+                  <span className="mx-2 text-gray-300">|</span>
+                  {phone}
+                </p>
+              )}
+            </div>
+          )
+        })()}
 
         {/* Primary CTA */}
         {job.apply_url && (

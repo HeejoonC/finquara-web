@@ -35,16 +35,36 @@ export default async function JobsPage({ searchParams }: { searchParams: SearchP
     query = query.or(`title.ilike.%${params.q}%,company.ilike.%${params.q}%`)
   }
   if (params.main) {
-    query = query.contains('main_specializations', [params.main])
+    const vals = params.main.split(',').filter(Boolean)
+    if (vals.length === 1) {
+      query = query.contains('main_specializations', vals)
+    } else {
+      query = query.overlaps('main_specializations', vals)
+    }
   }
   if (params.detail) {
-    query = query.contains('detailed_specialties', [params.detail])
+    const vals = params.detail.split(',').filter(Boolean)
+    if (vals.length === 1) {
+      query = query.contains('detailed_specialties', vals)
+    } else {
+      query = query.overlaps('detailed_specialties', vals)
+    }
   }
   if (params.exp) {
-    query = query.eq('experience_level', params.exp)
+    const vals = params.exp.split(',').filter(Boolean)
+    if (vals.length === 1) {
+      query = query.eq('experience_level', vals[0])
+    } else {
+      query = query.in('experience_level', vals)
+    }
   }
   if (params.type) {
-    query = query.eq('employment_type', params.type)
+    const vals = params.type.split(',').filter(Boolean)
+    if (vals.length === 1) {
+      query = query.eq('employment_type', vals[0])
+    } else {
+      query = query.in('employment_type', vals)
+    }
   }
 
   const { data: jobs } = await query

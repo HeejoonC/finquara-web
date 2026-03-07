@@ -37,7 +37,7 @@ export default async function Navbar() {
             채용공고
           </Link>
 
-          {profile?.role === 'employer' && (
+          {user && (
             <Link href="/post" className="text-sm text-gray-600 hover:text-[#2563EB] transition-colors">
               공고 등록
             </Link>

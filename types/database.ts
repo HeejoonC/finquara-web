@@ -57,13 +57,18 @@ export interface Job {
   title: string
   company: string
   location: string | null
+  /** @deprecated v1 field kept for backward compat. New records use main_specializations. */
   specialization: string | null
+  main_specializations: string[]
+  detailed_specialties: string[]
   experience_level: string | null
+  employment_type: string | null
   salary_range: string | null
   description: string | null
   apply_url: string | null
   is_published: boolean
   created_at: string
+  updated_at: string
 }
 
 export interface Waitlist {

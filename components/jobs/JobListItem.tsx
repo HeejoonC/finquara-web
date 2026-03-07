@@ -1,6 +1,3 @@
-'use client'
-
-import { useState } from 'react'
 import Link from 'next/link'
 import type { Job } from '@/types/database'
 
@@ -14,8 +11,6 @@ function formatDate(dateStr: string): string {
 }
 
 export default function JobListItem({ job }: { job: Job }) {
-  const [detailOpen, setDetailOpen] = useState(false)
-
   const mainTags = job.main_specializations?.length
     ? job.main_specializations
     : job.specialization
@@ -33,10 +28,10 @@ export default function JobListItem({ job }: { job: Job }) {
       >
         {/* 제목 + 회사 */}
         <div className="min-w-0">
-          <p className="text-sm font-semibold text-gray-900 group-hover:text-[#2563EB] transition-colors truncate">
+          <p className="text-sm font-semibold text-gray-900 group-hover:text-[#2563EB] transition-colors">
             {job.title}
           </p>
-          <p className="text-xs text-gray-500 mt-0.5 truncate">{job.company}</p>
+          <p className="text-xs text-gray-500 mt-0.5">{job.company}</p>
         </div>
 
         {/* 분야 */}
@@ -95,12 +90,12 @@ export default function JobListItem({ job }: { job: Job }) {
       <div className="md:hidden px-4 py-3">
         {/* 줄 1: 공고 제목 */}
         <Link href={`/jobs/${job.id}`} className="group block mb-1.5">
-          <p className="text-sm font-semibold text-gray-900 group-hover:text-[#2563EB] transition-colors truncate">
+          <p className="text-sm font-semibold text-gray-900 group-hover:text-[#2563EB] transition-colors">
             {job.title}
           </p>
         </Link>
 
-        {/* 줄 2: 분야 · 세부전문(접기) · 경력 · 고용형태 · 등록일 */}
+        {/* 줄 2: 분야 · 세부전문 · 경력 · 고용형태 · 등록일 */}
         <div className="flex flex-wrap items-center gap-x-1.5 gap-y-1">
           {/* 분야: 1개만 표시 */}
           {mainTags.slice(0, 1).map(s => (
@@ -109,25 +104,12 @@ export default function JobListItem({ job }: { job: Job }) {
             </span>
           ))}
 
-          {/* 세부전문: 기본 2개, 접기 버튼 */}
-          {detailTags.length > 0 && (
-            <>
-              {(detailOpen ? detailTags : detailTags.slice(0, 2)).map(s => (
-                <span key={s} className="text-xs px-2 py-0.5 bg-gray-100 text-gray-600 rounded-full whitespace-nowrap">
-                  {s}
-                </span>
-              ))}
-              {detailTags.length > 2 && (
-                <button
-                  type="button"
-                  onClick={() => setDetailOpen(v => !v)}
-                  className="text-xs text-[#2563EB] font-medium whitespace-nowrap"
-                >
-                  {detailOpen ? '접기 ▲' : `+${detailTags.length - 2} ▼`}
-                </button>
-              )}
-            </>
-          )}
+          {/* 세부전문: 최대 2개 고정 표시 */}
+          {detailTags.slice(0, 2).map(s => (
+            <span key={s} className="text-xs px-2 py-0.5 bg-gray-100 text-gray-600 rounded-full whitespace-nowrap">
+              {s}
+            </span>
+          ))}
 
           {/* 경력 */}
           {job.experience_level && (

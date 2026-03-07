@@ -34,7 +34,8 @@ export default function PostJobPage() {
     employment_type: '',
     salary_range: '',
     apply_url: '',
-    contact_info: '',
+    contact_email: '',
+    contact_phone: '',
     description: '',
   })
   const [mainSpecializations, setMainSpecializations] = useState<string[]>([])
@@ -115,17 +116,17 @@ export default function PostJobPage() {
       salary_range: form.salary_range || null,
       description: form.description || null,
       apply_url: form.apply_url || null,
-      contact_info: form.contact_info || null,
+      contact_info: [form.contact_email, form.contact_phone].filter(Boolean).join(' / ') || null,
       owner_id: ownerId,
       main_specializations: mainSpecializations,
       detailed_specialties: detailedSpecialties,
-      is_published: false,
+      is_published: true,
     })
 
     if (error) {
       setMessage('등록 중 오류가 발생했습니다: ' + error.message)
     } else {
-      setMessage('채용공고가 등록되었습니다. 관리자 검토 후 게시됩니다.')
+      setMessage('채용공고가 등록되었습니다.')
       setForm({
         title: '',
         location: '',
@@ -134,7 +135,8 @@ export default function PostJobPage() {
         employment_type: '',
         salary_range: '',
         apply_url: '',
-        contact_info: '',
+        contact_email: '',
+        contact_phone: '',
         description: '',
       })
       setMainSpecializations([])
@@ -158,7 +160,7 @@ export default function PostJobPage() {
         <p className="text-gray-500 text-sm mt-1">
           게시자: <span className="font-medium text-gray-700">{displayName}</span>
         </p>
-        <p className="text-gray-400 text-xs mt-0.5">등록 후 관리자 승인 시 공개됩니다.</p>
+        <p className="text-gray-400 text-xs mt-0.5">등록 후 바로 공개됩니다.</p>
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-5">
@@ -328,10 +330,16 @@ export default function PostJobPage() {
               placeholder="https://..."
             />
             <TextField
-              label="담당자 및 연락처"
-              value={form.contact_info}
-              onChange={v => update('contact_info', v)}
-              placeholder="예: 홍길동 / recruit@example.com"
+              label="담당자 이메일"
+              value={form.contact_email}
+              onChange={v => update('contact_email', v)}
+              placeholder="예: recruit@example.com"
+            />
+            <TextField
+              label="담당자 연락처"
+              value={form.contact_phone}
+              onChange={v => update('contact_phone', v)}
+              placeholder="예: 010-1234-5678"
             />
           </div>
           <p className="text-xs text-gray-400">

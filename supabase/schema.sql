@@ -1,11 +1,7 @@
 -- =============================================
--- Finquara 추가 스키마 (기존 jobs, waitlist 테이블 유지)
--- Supabase SQL 편집기에서 실행하세요.
+-- Finquara 추가 스키마
+-- Supabase SQL 편집기에 이 내용 전체를 복사해서 실행하세요.
 -- =============================================
-
--- 기존 테이블 (이미 존재함, 참고용)
--- create table if not exists public.jobs (...)
--- create table if not exists public.waitlist (...)
 
 -- jobs 테이블에 owner_id 컬럼 추가 (없는 경우)
 alter table public.jobs add column if not exists owner_id uuid references auth.users on delete set null;
@@ -57,64 +53,18 @@ create table if not exists public.companies (
 );
 
 -- =============================================
--- 4. RLS (Row Level Security) 설정
+-- 4. RLS 활성화
 -- =============================================
-
--- profiles
 alter table public.profiles enable row level security;
-
-create policy "누구나 프로필 조회 가능" on public.profiles
-  for select using (true);
-
-create policy "본인 프로필 삽입 가능" on public.profiles
-  for insert with check (auth.uid() = id);
-
-create policy "본인 프로필 수정 가능" on public.profiles
-  for update using (auth.uid() = id);
-
--- job_seeker_profiles
 alter table public.job_seeker_profiles enable row level security;
-
-create policy "구직자 프로필 조회 가능" on public.job_seeker_profiles
-  for select using (true);
-
-create policy "본인 구직자 프로필 관리" on public.job_seeker_profiles
-  for all using (auth.uid() = id);
-
--- companies
 alter table public.companies enable row level security;
-
-create policy "누구나 기업 조회 가능" on public.companies
-  for select using (true);
-
-create policy "기업주 본인 기업 관리" on public.companies
-  for all using (auth.uid() = owner_id);
-
--- jobs (기존 테이블에 RLS 추가)
 alter table public.jobs enable row level security;
-
-create policy "누구나 공개 채용공고 조회" on public.jobs
-  for select using (is_published = true or auth.uid() = owner_id);
-
-create policy "기업주 채용공고 등록" on public.jobs
-  for insert with check (auth.uid() = owner_id);
-
-create policy "기업주 본인 채용공고 수정" on public.jobs
-  for update using (auth.uid() = owner_id);
-
-create policy "기업주 본인 채용공고 삭제" on public.jobs
-  for delete using (auth.uid() = owner_id);
-
--- waitlist (기존 테이블에 RLS 추가)
 alter table public.waitlist enable row level security;
 
-create policy "누구나 대기목록 등록 가능" on public.waitlist
-  for insert with check (true);
-
 -- =============================================
--- 5. 관리자 권한 함수
+-- 5. 관리자 권한 함수 (정책보다 먼저 생성)
 -- =============================================
-create or replace function is_admin()
+create or replace function public.is_admin()
 returns boolean as $$
 begin
   return exists (
@@ -124,18 +74,84 @@ begin
 end;
 $$ language plpgsql security definer;
 
--- 관리자 전체 권한 정책
-create policy "관리자 모든 프로필 관리" on public.profiles
-  for all using (is_admin());
+-- =============================================
+-- 6. profiles 정책 (기존 정책 제거 후 재생성)
+-- =============================================
+drop policy if exists "profiles_select" on public.profiles;
+drop policy if exists "profiles_insert" on public.profiles;
+drop policy if exists "profiles_update" on public.profiles;
+drop policy if exists "profiles_delete" on public.profiles;
 
-create policy "관리자 모든 채용공고 관리" on public.jobs
-  for all using (is_admin());
+create policy "profiles_select" on public.profiles
+  for select using (true);
 
-create policy "관리자 대기목록 조회" on public.waitlist
-  for select using (is_admin());
+create policy "profiles_insert" on public.profiles
+  for insert with check (auth.uid() = id);
+
+create policy "profiles_update" on public.profiles
+  for update using (auth.uid() = id or public.is_admin());
+
+create policy "profiles_delete" on public.profiles
+  for delete using (public.is_admin());
 
 -- =============================================
--- 6. 신규 회원가입 시 프로필 자동 생성 트리거
+-- 7. job_seeker_profiles 정책
+-- =============================================
+drop policy if exists "jsp_select" on public.job_seeker_profiles;
+drop policy if exists "jsp_all" on public.job_seeker_profiles;
+
+create policy "jsp_select" on public.job_seeker_profiles
+  for select using (true);
+
+create policy "jsp_all" on public.job_seeker_profiles
+  for all using (auth.uid() = id or public.is_admin());
+
+-- =============================================
+-- 8. companies 정책
+-- =============================================
+drop policy if exists "companies_select" on public.companies;
+drop policy if exists "companies_all" on public.companies;
+
+create policy "companies_select" on public.companies
+  for select using (true);
+
+create policy "companies_all" on public.companies
+  for all using (auth.uid() = owner_id or public.is_admin());
+
+-- =============================================
+-- 9. jobs 정책
+-- =============================================
+drop policy if exists "jobs_select" on public.jobs;
+drop policy if exists "jobs_insert" on public.jobs;
+drop policy if exists "jobs_update" on public.jobs;
+drop policy if exists "jobs_delete" on public.jobs;
+
+create policy "jobs_select" on public.jobs
+  for select using (is_published = true or auth.uid() = owner_id or public.is_admin());
+
+create policy "jobs_insert" on public.jobs
+  for insert with check (auth.uid() = owner_id);
+
+create policy "jobs_update" on public.jobs
+  for update using (auth.uid() = owner_id or public.is_admin());
+
+create policy "jobs_delete" on public.jobs
+  for delete using (auth.uid() = owner_id or public.is_admin());
+
+-- =============================================
+-- 10. waitlist 정책
+-- =============================================
+drop policy if exists "waitlist_insert" on public.waitlist;
+drop policy if exists "waitlist_select" on public.waitlist;
+
+create policy "waitlist_insert" on public.waitlist
+  for insert with check (true);
+
+create policy "waitlist_select" on public.waitlist
+  for select using (public.is_admin());
+
+-- =============================================
+-- 11. 신규 회원가입 시 프로필 자동 생성 트리거
 -- =============================================
 create or replace function public.handle_new_user()
 returns trigger as $$
@@ -146,7 +162,8 @@ begin
     new.email,
     new.raw_user_meta_data->>'full_name',
     coalesce(new.raw_user_meta_data->>'role', 'job_seeker')
-  );
+  )
+  on conflict (id) do nothing;
   return new;
 end;
 $$ language plpgsql security definer;
@@ -157,9 +174,9 @@ create trigger on_auth_user_created
   for each row execute procedure public.handle_new_user();
 
 -- =============================================
--- 7. updated_at 자동 업데이트 트리거
+-- 12. updated_at 자동 업데이트 트리거
 -- =============================================
-create or replace function update_updated_at()
+create or replace function public.update_updated_at()
 returns trigger as $$
 begin
   new.updated_at = now();
@@ -167,11 +184,14 @@ begin
 end;
 $$ language plpgsql;
 
+drop trigger if exists profiles_updated_at on public.profiles;
 create trigger profiles_updated_at before update on public.profiles
-  for each row execute procedure update_updated_at();
+  for each row execute procedure public.update_updated_at();
 
+drop trigger if exists companies_updated_at on public.companies;
 create trigger companies_updated_at before update on public.companies
-  for each row execute procedure update_updated_at();
+  for each row execute procedure public.update_updated_at();
 
-create trigger job_seeker_profiles_updated_at before update on public.job_seeker_profiles
-  for each row execute procedure update_updated_at();
+drop trigger if exists jsp_updated_at on public.job_seeker_profiles;
+create trigger jsp_updated_at before update on public.job_seeker_profiles
+  for each row execute procedure public.update_updated_at();

@@ -1,6 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import Link from 'next/link'
 import JobFilters from '@/components/jobs/JobFilters'
+import JobListItem from '@/components/jobs/JobListItem'
 import type { Job } from '@/types/database'
 import { MAIN_SPECIALIZATIONS, DETAILED_SPECIALTIES } from '@/lib/constants/actuary'
 
@@ -12,21 +13,54 @@ type SearchParams = Promise<{
   type?: string
 }>
 
-function formatDate(dateStr: string): string {
-  const date = new Date(dateStr)
-  const now = new Date()
-  const diffDays = Math.floor((now.getTime() - date.getTime()) / 86_400_000)
-  if (diffDays === 0) return '오늘'
-  if (diffDays < 7) return `${diffDays}일 전`
-  if (diffDays < 30) return `${Math.floor(diffDays / 7)}주 전`
-  return date.toLocaleDateString('ko-KR', { month: 'long', day: 'numeric' })
+// Parse experience string into a comparable range
+// Handles: "신입", "경력무관", "경력 5~7년" (from job form), "5~8년" (from filter chips), "20년 초과"
+function parseExpRange(val: string): { min: number; max: number } | 'fresh' | 'any' | null {
+  if (!val) return null
+  const v = val.trim()
+  if (v === '신입') return 'fresh'
+  if (v === '경력무관') return 'any'
+  if (v === '20년 초과') return { min: 20, max: Infinity }
+  if (v === '경력') return { min: 0, max: Infinity }
+
+  // "경력 5~7년" format (from job posting form)
+  const m1 = v.match(/^경력\s*(\d+)\s*~\s*(\d+)년?$/)
+  if (m1) return { min: parseInt(m1[1]), max: parseInt(m1[2]) }
+
+  // "5~8년" format (from filter chips)
+  const m2 = v.match(/^(\d+)~(\d+)년$/)
+  if (m2) return { min: parseInt(m2[1]), max: parseInt(m2[2]) }
+
+  return null
+}
+
+// Check if a job's experience level matches any of the selected filter values
+// Uses range overlap: job range [a,b] overlaps filter range [c,d] when a<=d && c<=b
+function expMatches(jobLevel: string | null, filterVals: string[]): boolean {
+  if (!filterVals.length) return true
+  if (!jobLevel) return false
+
+  const jobRange = parseExpRange(jobLevel)
+  if (!jobRange) return false
+
+  return filterVals.some(filterVal => {
+    const filterRange = parseExpRange(filterVal)
+    if (!filterRange) return false
+
+    if (filterRange === 'fresh') return jobRange === 'fresh'
+    if (jobRange === 'any') return true          // 경력무관은 모든 경력 필터에 매칭
+    if (jobRange === 'fresh') return false       // 신입은 신입 필터에만 매칭
+    if (filterRange === 'any') return true
+
+    // 범위 겹침 확인
+    return jobRange.min <= filterRange.max && filterRange.min <= jobRange.max
+  })
 }
 
 export default async function JobsPage({ searchParams }: { searchParams: SearchParams }) {
   const params = await searchParams
   const supabase = await createClient()
 
-  // Show post button to any logged-in user
   let canPost = false
   try {
     const { data: { user } } = await supabase.auth.getUser()
@@ -76,14 +110,7 @@ export default async function JobsPage({ searchParams }: { searchParams: SearchP
       query = query.overlaps('detailed_specialties', vals)
     }
   }
-  if (params.exp) {
-    const vals = params.exp.split(',').filter(Boolean)
-    if (vals.length === 1) {
-      query = query.eq('experience_level', vals[0])
-    } else {
-      query = query.in('experience_level', vals)
-    }
-  }
+  // 경력 필터는 범위 겹침 로직이 필요하여 DB 필터 대신 JS에서 처리
   if (params.type) {
     const vals = params.type.split(',').filter(Boolean)
     if (vals.length === 1) {
@@ -93,7 +120,13 @@ export default async function JobsPage({ searchParams }: { searchParams: SearchP
     }
   }
 
-  const { data: jobs } = await query
+  const { data: allJobs } = await query
+
+  // 경력 범위 겹침 필터 (JS)
+  const expFilterVals = params.exp ? params.exp.split(',').filter(Boolean) : []
+  const jobs = expFilterVals.length
+    ? (allJobs ?? []).filter((job: Job) => expMatches(job.experience_level, expFilterVals))
+    : (allJobs ?? [])
 
   const hasActiveFilters = !!(params.q || params.main || params.detail || params.exp || params.type)
 
@@ -121,19 +154,19 @@ export default async function JobsPage({ searchParams }: { searchParams: SearchP
       {/* Result count */}
       <p className="text-sm text-gray-500 mb-3">
         {hasActiveFilters && '필터 적용 중 · '}
-        {jobs?.length ?? 0}개의 채용공고
+        {jobs.length}개의 채용공고
       </p>
 
-      {/* Job table */}
-      {!jobs || jobs.length === 0 ? (
+      {/* Job list */}
+      {jobs.length === 0 ? (
         <div className="text-center py-20 text-gray-400">
           <p className="text-base mb-1">검색 결과가 없습니다.</p>
           <p className="text-sm">다른 검색어나 필터를 사용해 보세요.</p>
         </div>
       ) : (
         <div className="bg-white border border-gray-200 rounded-xl overflow-hidden">
-          {/* Table header */}
-          <div className="grid grid-cols-[2fr_1fr_1.5fr_1fr_1fr_auto] gap-x-4 px-5 py-3 bg-gray-50 border-b border-gray-200 text-xs font-semibold text-gray-500 uppercase tracking-wide">
+          {/* 테이블 헤더 (데스크톱만) */}
+          <div className="hidden md:grid grid-cols-[2fr_1fr_1.5fr_1fr_1fr_auto] gap-x-4 px-5 py-3 bg-gray-50 border-b border-gray-200 text-xs font-semibold text-gray-500 uppercase tracking-wide">
             <span>공고 제목 / 회사</span>
             <span>분야</span>
             <span>세부전문</span>
@@ -142,90 +175,11 @@ export default async function JobsPage({ searchParams }: { searchParams: SearchP
             <span className="text-right">등록자 / 등록일</span>
           </div>
 
-          {/* Table rows */}
+          {/* 각 공고 행 */}
           <div className="divide-y divide-gray-100">
-            {jobs.map((job: Job) => {
-              const mainTags = job.main_specializations ?? []
-              const displayMain = mainTags.length
-                ? mainTags
-                : job.specialization
-                ? [job.specialization]
-                : []
-
-              const detailTags: string[] = job.detailed_specialties ?? []
-
-              return (
-                <Link
-                  key={job.id}
-                  href={`/jobs/${job.id}`}
-                  className="grid grid-cols-[2fr_1fr_1.5fr_1fr_1fr_auto] gap-x-4 px-5 py-4 items-center hover:bg-blue-50 transition-colors group"
-                >
-                  {/* Title + company */}
-                  <div className="min-w-0">
-                    <p className="text-sm font-semibold text-gray-900 group-hover:text-[#2563EB] transition-colors truncate">
-                      {job.title}
-                    </p>
-                    <p className="text-xs text-gray-500 mt-0.5 truncate">{job.company}</p>
-                  </div>
-
-                  {/* 분야 */}
-                  <div className="min-w-0">
-                    {displayMain.length > 0 ? (
-                      <div className="flex flex-wrap gap-1">
-                        {displayMain.slice(0, 2).map(s => (
-                          <span
-                            key={s}
-                            className="text-xs px-2 py-0.5 bg-blue-50 text-[#2563EB] rounded-full border border-blue-100 whitespace-nowrap"
-                          >
-                            {s}
-                          </span>
-                        ))}
-                      </div>
-                    ) : (
-                      <span className="text-xs text-gray-400">-</span>
-                    )}
-                  </div>
-
-                  {/* 세부전문 */}
-                  <div className="min-w-0">
-                    {detailTags.length > 0 ? (
-                      <div className="flex flex-wrap gap-1">
-                        {detailTags.slice(0, 2).map(s => (
-                          <span
-                            key={s}
-                            className="text-xs px-2 py-0.5 bg-gray-100 text-gray-600 rounded-full whitespace-nowrap"
-                          >
-                            {s}
-                          </span>
-                        ))}
-                      </div>
-                    ) : (
-                      <span className="text-xs text-gray-400">-</span>
-                    )}
-                  </div>
-
-                  {/* 경력 */}
-                  <div>
-                    <span className="text-sm text-gray-600">
-                      {job.experience_level || '-'}
-                    </span>
-                  </div>
-
-                  {/* 고용형태 */}
-                  <div>
-                    <span className="text-sm text-gray-600">
-                      {job.employment_type || '-'}
-                    </span>
-                  </div>
-
-                  {/* 등록자 / 등록일 */}
-                  <div className="text-right">
-                    <p className="text-xs text-gray-600 whitespace-nowrap">{job.company}</p>
-                    <p className="text-xs text-gray-400 whitespace-nowrap mt-0.5">{formatDate(job.created_at)}</p>
-                  </div>
-                </Link>
-              )
-            })}
+            {jobs.map((job: Job) => (
+              <JobListItem key={job.id} job={job} />
+            ))}
           </div>
         </div>
       )}

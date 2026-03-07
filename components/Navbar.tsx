@@ -37,13 +37,7 @@ export default async function Navbar() {
             채용공고
           </Link>
 
-          {user && (
-            <Link href="/post" className="text-sm text-gray-600 hover:text-[#2563EB] transition-colors">
-              공고 등록
-            </Link>
-          )}
-
-          {profile?.role === 'admin' && (
+{profile?.role === 'admin' && (
             <Link href="/admin" className="text-sm text-gray-600 hover:text-[#2563EB] transition-colors">
               관리자
             </Link>

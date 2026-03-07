@@ -66,6 +66,7 @@ export interface Job {
   salary_range: string | null
   description: string | null
   apply_url: string | null
+  contact_info: string | null
   is_published: boolean
   created_at: string
   updated_at: string

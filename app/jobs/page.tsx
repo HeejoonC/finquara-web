@@ -25,6 +25,22 @@ export default async function JobsPage({ searchParams }: { searchParams: SearchP
   const params = await searchParams
   const supabase = await createClient()
 
+  // Check auth to conditionally show post button
+  let canPost = false
+  try {
+    const { data: { user } } = await supabase.auth.getUser()
+    if (user) {
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('role')
+        .eq('id', user.id)
+        .single()
+      canPost = profile?.role === 'employer' || profile?.role === 'admin'
+    }
+  } catch {
+    // ignore
+  }
+
   let query = supabase
     .from('jobs')
     .select('*')
@@ -72,107 +88,115 @@ export default async function JobsPage({ searchParams }: { searchParams: SearchP
   const hasActiveFilters = !!(params.q || params.main || params.detail || params.exp || params.type)
 
   return (
-    <div className="max-w-4xl mx-auto px-4 py-10">
+    <div className="max-w-5xl mx-auto px-4 py-10">
       {/* Header */}
-      <div className="mb-6">
-        <h1 className="text-2xl font-bold text-[#0B1F3A]">채용공고</h1>
-        <p className="text-gray-500 text-sm mt-1">계리·보험 분야 채용정보를 찾아보세요.</p>
+      <div className="flex items-center justify-between mb-6">
+        <div>
+          <h1 className="text-2xl font-bold text-[#0B1F3A]">채용공고</h1>
+          <p className="text-gray-500 text-sm mt-1">계리·보험 분야 채용정보를 찾아보세요.</p>
+        </div>
+        {canPost && (
+          <Link
+            href="/post"
+            className="px-5 py-2.5 bg-[#2563EB] text-white text-sm font-medium rounded-lg hover:opacity-90 transition-opacity flex-shrink-0"
+          >
+            + 공고 등록
+          </Link>
+        )}
       </div>
 
       {/* Filters (client component) */}
       <JobFilters current={params} />
 
       {/* Result count */}
-      <p className="text-sm text-gray-500 mb-5">
+      <p className="text-sm text-gray-500 mb-3">
         {hasActiveFilters && '필터 적용 중 · '}
         {jobs?.length ?? 0}개의 채용공고
       </p>
 
-      {/* Job list */}
+      {/* Job table */}
       {!jobs || jobs.length === 0 ? (
         <div className="text-center py-20 text-gray-400">
           <p className="text-base mb-1">검색 결과가 없습니다.</p>
           <p className="text-sm">다른 검색어나 필터를 사용해 보세요.</p>
         </div>
       ) : (
-        <div className="space-y-3">
-          {jobs.map((job: Job) => {
-            const mainTags = job.main_specializations ?? []
-            const detailTags = job.detailed_specialties ?? []
-            // Fall back to legacy specialization field for old records
-            const displayMain = mainTags.length ? mainTags : (job.specialization ? [job.specialization] : [])
+        <div className="bg-white border border-gray-200 rounded-xl overflow-hidden">
+          {/* Table header */}
+          <div className="grid grid-cols-[2fr_1fr_1fr_1fr_auto] gap-x-4 px-5 py-3 bg-gray-50 border-b border-gray-200 text-xs font-semibold text-gray-500 uppercase tracking-wide">
+            <span>공고 제목 / 회사</span>
+            <span>분야</span>
+            <span>경력</span>
+            <span>고용형태</span>
+            <span className="text-right">등록일</span>
+          </div>
 
-            return (
-              <Link
-                key={job.id}
-                href={`/jobs/${job.id}`}
-                className="block bg-white border border-gray-200 rounded-xl p-5 hover:border-[#2563EB] hover:shadow-sm transition-all group"
-              >
-                {/* Specialization tags */}
-                {(displayMain.length > 0 || detailTags.length > 0) && (
-                  <div className="flex flex-wrap gap-1.5 mb-2">
-                    {displayMain.slice(0, 2).map(s => (
-                      <span
-                        key={s}
-                        className="text-xs px-2 py-0.5 bg-blue-50 text-[#2563EB] rounded-full border border-blue-100"
-                      >
-                        {s}
-                      </span>
-                    ))}
-                    {detailTags.slice(0, 2).map(s => (
-                      <span
-                        key={s}
-                        className="text-xs px-2 py-0.5 bg-gray-100 text-gray-600 rounded-full"
-                      >
-                        {s}
-                      </span>
-                    ))}
-                    {detailTags.length > 2 && (
-                      <span className="text-xs px-2 py-0.5 bg-gray-100 text-gray-400 rounded-full">
-                        +{detailTags.length - 2}
-                      </span>
+          {/* Table rows */}
+          <div className="divide-y divide-gray-100">
+            {jobs.map((job: Job) => {
+              const mainTags = job.main_specializations ?? []
+              const displayMain = mainTags.length
+                ? mainTags
+                : job.specialization
+                ? [job.specialization]
+                : []
+
+              return (
+                <Link
+                  key={job.id}
+                  href={`/jobs/${job.id}`}
+                  className="grid grid-cols-[2fr_1fr_1fr_1fr_auto] gap-x-4 px-5 py-4 items-center hover:bg-blue-50 transition-colors group"
+                >
+                  {/* Title + company */}
+                  <div className="min-w-0">
+                    <p className="text-sm font-semibold text-gray-900 group-hover:text-[#2563EB] transition-colors truncate">
+                      {job.title}
+                    </p>
+                    <p className="text-xs text-gray-500 mt-0.5 truncate">{job.company}</p>
+                  </div>
+
+                  {/* 분야 */}
+                  <div className="min-w-0">
+                    {displayMain.length > 0 ? (
+                      <div className="flex flex-wrap gap-1">
+                        {displayMain.slice(0, 2).map(s => (
+                          <span
+                            key={s}
+                            className="text-xs px-2 py-0.5 bg-blue-50 text-[#2563EB] rounded-full border border-blue-100 whitespace-nowrap"
+                          >
+                            {s}
+                          </span>
+                        ))}
+                      </div>
+                    ) : (
+                      <span className="text-xs text-gray-400">-</span>
                     )}
                   </div>
-                )}
 
-                {/* Title */}
-                <h2 className="text-base font-semibold text-gray-900 group-hover:text-[#2563EB] transition-colors">
-                  {job.title}
-                </h2>
+                  {/* 경력 */}
+                  <div>
+                    <span className="text-sm text-gray-600">
+                      {job.experience_level || '-'}
+                    </span>
+                  </div>
 
-                {/* Company · location · exp · type */}
-                <div className="flex flex-wrap items-center gap-x-1.5 gap-y-0.5 mt-1 text-sm text-gray-500">
-                  <span className="font-medium text-gray-700">{job.company}</span>
-                  {job.location && (
-                    <>
-                      <span className="text-gray-300">·</span>
-                      <span>{job.location}</span>
-                    </>
-                  )}
-                  {job.experience_level && (
-                    <>
-                      <span className="text-gray-300">·</span>
-                      <span>{job.experience_level}</span>
-                    </>
-                  )}
-                  {job.employment_type && (
-                    <>
-                      <span className="text-gray-300">·</span>
-                      <span>{job.employment_type}</span>
-                    </>
-                  )}
-                </div>
+                  {/* 고용형태 */}
+                  <div>
+                    <span className="text-sm text-gray-600">
+                      {job.employment_type || '-'}
+                    </span>
+                  </div>
 
-                {/* Description excerpt */}
-                {job.description && (
-                  <p className="mt-2 text-sm text-gray-500 line-clamp-2">{job.description}</p>
-                )}
-
-                {/* Date */}
-                <div className="mt-3 text-xs text-gray-400">{formatDate(job.created_at)}</div>
-              </Link>
-            )
-          })}
+                  {/* 등록일 */}
+                  <div className="text-right">
+                    <span className="text-xs text-gray-400 whitespace-nowrap">
+                      {formatDate(job.created_at)}
+                    </span>
+                  </div>
+                </Link>
+              )
+            })}
+          </div>
         </div>
       )}
     </div>

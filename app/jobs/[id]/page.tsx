@@ -95,6 +95,17 @@ export default async function JobDetailPage({
           </div>
         )}
 
+        {/* Contact info */}
+        {(job as any).contact_info && (
+          <div className="mt-4 pt-4 border-t border-gray-100">
+            <p className="text-sm text-gray-500">
+              <span className="font-medium text-gray-700">담당자 · 연락처</span>
+              <span className="mx-2 text-gray-300">|</span>
+              {(job as any).contact_info}
+            </p>
+          </div>
+        )}
+
         {/* Primary CTA */}
         {job.apply_url && (
           <div className="mt-5">
@@ -114,9 +125,16 @@ export default async function JobDetailPage({
       {job.description && (
         <div className="bg-white border border-gray-200 rounded-xl p-6">
           <h2 className="text-base font-semibold text-gray-800 mb-4">공고 내용</h2>
-          <div className="text-sm text-gray-700 leading-relaxed whitespace-pre-wrap">
-            {job.description}
-          </div>
+          {job.description.startsWith('<') ? (
+            <div
+              className="prose prose-sm max-w-none text-gray-700 leading-relaxed"
+              dangerouslySetInnerHTML={{ __html: job.description }}
+            />
+          ) : (
+            <div className="text-sm text-gray-700 leading-relaxed whitespace-pre-wrap">
+              {job.description}
+            </div>
+          )}
         </div>
       )}
 

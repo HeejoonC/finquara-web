@@ -37,11 +37,12 @@ export const DETAILED_SPECIALTIES = [
 
 export const EXPERIENCE_LEVELS = [
   '신입',
-  '1~3년',
-  '3~5년',
-  '5~7년',
-  '7년 이상',
-  '경력무관',
+  '1~4년',
+  '5~8년',
+  '9~12년',
+  '13~16년',
+  '17~20년',
+  '20년 초과',
 ] as const
 
 export const EMPLOYMENT_TYPES = [

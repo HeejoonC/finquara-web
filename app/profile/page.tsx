@@ -312,7 +312,7 @@ export default function ProfilePage() {
         {/* ── B. 주요 분야 ── */}
         <Section title="주요 분야" description="해당하는 분야를 모두 선택해 주세요.">
           <MultiSelectChips
-            options={MAIN_SPECIALIZATIONS}
+            options={[...MAIN_SPECIALIZATIONS]}
             selected={seeker.main_specializations}
             onChange={v => setSeeker(s => ({ ...s, main_specializations: v }))}
           />
@@ -321,7 +321,7 @@ export default function ProfilePage() {
         {/* ── C. 세부 전문 분야 ── */}
         <Section title="세부 전문 분야" description="해당하는 업무를 모두 선택해 주세요.">
           <MultiSelectChips
-            options={DETAILED_SPECIALTIES}
+            options={[...DETAILED_SPECIALTIES]}
             selected={seeker.detailed_specialties}
             onChange={v => setSeeker(s => ({ ...s, detailed_specialties: v }))}
           />

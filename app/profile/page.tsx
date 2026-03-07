@@ -6,7 +6,7 @@ import { createClient } from '@/lib/supabase/client'
 import MultiSelectChips from '@/components/ui/MultiSelectChips'
 import ToggleSwitch from '@/components/ui/ToggleSwitch'
 import ResumeUploader from '@/components/ui/ResumeUploader'
-import { MAIN_SPECIALIZATIONS, DETAILED_SPECIALTIES } from '@/lib/constants/actuary'
+import { useTaxonomy } from '@/lib/hooks/useTaxonomy'
 
 const QUALIFICATIONS = ['FIAK', 'ASA', 'FSA', '한국 일부합격', '미국 일부합격']
 
@@ -72,6 +72,7 @@ interface SeekerState {
 export default function ProfilePage() {
   const router = useRouter()
   const supabase = createClient()
+  const taxonomy = useTaxonomy()
 
   const [userId, setUserId] = useState<string | null>(null)
   const [userEmail, setUserEmail] = useState('')
@@ -312,7 +313,7 @@ export default function ProfilePage() {
         {/* ── B. 주요 분야 ── */}
         <Section title="주요 분야" description="해당하는 분야를 모두 선택해 주세요.">
           <MultiSelectChips
-            options={[...MAIN_SPECIALIZATIONS]}
+            options={taxonomy.main}
             selected={seeker.main_specializations}
             onChange={v => setSeeker(s => ({ ...s, main_specializations: v }))}
           />
@@ -321,7 +322,7 @@ export default function ProfilePage() {
         {/* ── C. 세부 전문 분야 ── */}
         <Section title="세부 전문 분야" description="해당하는 업무를 모두 선택해 주세요.">
           <MultiSelectChips
-            options={[...DETAILED_SPECIALTIES]}
+            options={taxonomy.detail}
             selected={seeker.detailed_specialties}
             onChange={v => setSeeker(s => ({ ...s, detailed_specialties: v }))}
           />

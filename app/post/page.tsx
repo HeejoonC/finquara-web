@@ -4,11 +4,9 @@ import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import dynamic from 'next/dynamic'
-import {
-  MAIN_SPECIALIZATIONS,
-  DETAILED_SPECIALTIES,
-  EMPLOYMENT_TYPES,
-} from '@/lib/constants/actuary'
+import { EMPLOYMENT_TYPES } from '@/lib/constants/actuary'
+import ExperienceField from '@/components/jobs/ExperienceField'
+import { useTaxonomy } from '@/lib/hooks/useTaxonomy'
 
 const RichTextEditor = dynamic(() => import('@/components/ui/RichTextEditor'), { ssr: false })
 
@@ -17,6 +15,7 @@ const WORKPLACE_TYPES = ['대면 근무', '원격 근무', '하이브리드'] as
 export default function PostJobPage() {
   const router = useRouter()
   const supabase = createClient()
+  const taxonomy = useTaxonomy()
 
   const [loading, setLoading] = useState(true)
   const [submitting, setSubmitting] = useState(false)
@@ -210,18 +209,16 @@ export default function PostJobPage() {
 
         {/* 2. 고용 조건 */}
         <Section step="2" title="고용 조건">
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-2 gap-4 items-start">
             <SelectField
               label="고용형태"
               value={form.employment_type}
               onChange={v => update('employment_type', v)}
               options={[...EMPLOYMENT_TYPES]}
             />
-            <TextField
-              label="경력 요건"
+            <ExperienceField
               value={form.experience_level}
               onChange={v => update('experience_level', v)}
-              placeholder="예: 신입, 3년 이상, 5~8년, 무관"
             />
           </div>
           <TextField
@@ -240,7 +237,7 @@ export default function PostJobPage() {
               <span className="text-gray-400 font-normal">(복수 선택 가능)</span>
             </label>
             <div className="flex flex-wrap gap-2">
-              {MAIN_SPECIALIZATIONS.map(s => (
+              {taxonomy.main.map(s => (
                 <button
                   key={s}
                   type="button"
@@ -263,7 +260,7 @@ export default function PostJobPage() {
               <span className="text-gray-400 font-normal">(복수 선택 가능)</span>
             </label>
             <div className="flex flex-wrap gap-2">
-              {DETAILED_SPECIALTIES.map(s => (
+              {taxonomy.detail.map(s => (
                 <button
                   key={s}
                   type="button"

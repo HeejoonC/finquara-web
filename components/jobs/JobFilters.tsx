@@ -17,7 +17,15 @@ interface Filters {
   type?: string   // comma-separated
 }
 
-export default function JobFilters({ current }: { current: Filters }) {
+export default function JobFilters({
+  current,
+  mainOptions = [...MAIN_SPECIALIZATIONS],
+  detailOptions = [...DETAILED_SPECIALTIES],
+}: {
+  current: Filters
+  mainOptions?: string[]
+  detailOptions?: string[]
+}) {
   const router = useRouter()
   const pathname = usePathname()
   const [, startTransition] = useTransition()
@@ -79,13 +87,13 @@ export default function JobFilters({ current }: { current: Filters }) {
       <div className="bg-white border border-gray-200 rounded-xl p-4 space-y-3">
         <FilterRow
           label="분야"
-          options={[...MAIN_SPECIALIZATIONS]}
+          options={mainOptions}
           selected={selectedMain}
           onToggle={v => toggleValue('main', selectedMain, v)}
         />
         <FilterRow
           label="세부전문"
-          options={[...DETAILED_SPECIALTIES]}
+          options={detailOptions}
           selected={selectedDetail}
           onToggle={v => toggleValue('detail', selectedDetail, v)}
         />

@@ -2,6 +2,7 @@ import { createClient } from '@/lib/supabase/server'
 import Link from 'next/link'
 import JobFilters from '@/components/jobs/JobFilters'
 import type { Job } from '@/types/database'
+import { MAIN_SPECIALIZATIONS, DETAILED_SPECIALTIES } from '@/lib/constants/actuary'
 
 type SearchParams = Promise<{
   q?: string
@@ -25,21 +26,30 @@ export default async function JobsPage({ searchParams }: { searchParams: SearchP
   const params = await searchParams
   const supabase = await createClient()
 
-  // Check auth to conditionally show post button
+  // Show post button to any logged-in user
   let canPost = false
   try {
     const { data: { user } } = await supabase.auth.getUser()
-    if (user) {
-      const { data: profile } = await supabase
-        .from('profiles')
-        .select('role')
-        .eq('id', user.id)
-        .single()
-      canPost = profile?.role === 'employer' || profile?.role === 'admin'
-    }
+    canPost = !!user
   } catch {
     // ignore
   }
+
+  // Fetch taxonomy from DB (fall back to constants if table not ready)
+  let mainOptions = [...MAIN_SPECIALIZATIONS] as string[]
+  let detailOptions = [...DETAILED_SPECIALTIES] as string[]
+  try {
+    const { data: taxItems } = await supabase
+      .from('taxonomy_items')
+      .select('type, label')
+      .order('sort_order')
+    if (taxItems?.length) {
+      const m = taxItems.filter(t => t.type === 'main').map(t => t.label)
+      const d = taxItems.filter(t => t.type === 'detail').map(t => t.label)
+      if (m.length) mainOptions = m
+      if (d.length) detailOptions = d
+    }
+  } catch { /* ignore */ }
 
   let query = supabase
     .from('jobs')
@@ -106,7 +116,7 @@ export default async function JobsPage({ searchParams }: { searchParams: SearchP
       </div>
 
       {/* Filters (client component) */}
-      <JobFilters current={params} />
+      <JobFilters current={params} mainOptions={mainOptions} detailOptions={detailOptions} />
 
       {/* Result count */}
       <p className="text-sm text-gray-500 mb-3">

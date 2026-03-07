@@ -2,12 +2,11 @@
 
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
-import { useRouter, useSearchParams } from 'next/navigation'
+import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 
 function ResetPasswordForm() {
   const router = useRouter()
-  const searchParams = useSearchParams()
   const [password, setPassword] = useState('')
   const [confirm, setConfirm] = useState('')
   const [loading, setLoading] = useState(false)
@@ -15,21 +14,14 @@ function ResetPasswordForm() {
   const [error, setError] = useState('')
 
   useEffect(() => {
-    const code = searchParams.get('code')
-    if (!code) {
-      setError('유효하지 않은 링크입니다. 비밀번호 찾기를 다시 시도해 주세요.')
-      return
-    }
-
     const supabase = createClient()
-    supabase.auth.exchangeCodeForSession(code).then(({ error }) => {
-      if (error) {
-        setError('링크가 만료되었거나 유효하지 않습니다. 비밀번호 찾기를 다시 시도해 주세요.')
-      } else {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
+      if (event === 'PASSWORD_RECOVERY') {
         setReady(true)
       }
     })
-  }, [searchParams])
+    return () => subscription.unsubscribe()
+  }, [])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -65,17 +57,10 @@ function ResetPasswordForm() {
           {error && (
             <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg text-red-600 text-sm">
               {error}
-              {!ready && (
-                <div className="mt-2">
-                  <Link href="/auth/forgot-password" className="underline">
-                    비밀번호 찾기로 돌아가기
-                  </Link>
-                </div>
-              )}
             </div>
           )}
 
-          {ready && (
+          {ready ? (
             <form onSubmit={handleSubmit} className="space-y-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">새 비밀번호</label>
@@ -111,10 +96,17 @@ function ResetPasswordForm() {
                 {loading ? '변경 중...' : '비밀번호 변경'}
               </button>
             </form>
-          )}
-
-          {!ready && !error && (
-            <p className="text-center text-sm text-gray-500">링크 확인 중...</p>
+          ) : (
+            <div className="text-center py-4">
+              <p className="text-sm text-gray-500">링크를 확인하는 중입니다...</p>
+              <p className="text-xs text-gray-400 mt-2">
+                폼이 나타나지 않으면{' '}
+                <Link href="/auth/forgot-password" className="text-[#2563EB] underline">
+                  비밀번호 찾기
+                </Link>
+                를 다시 시도해 주세요.
+              </p>
+            </div>
           )}
         </div>
       </div>

@@ -9,6 +9,7 @@ import {
   DETAILED_SPECIALTIES,
   EMPLOYMENT_TYPES,
 } from '@/lib/constants/actuary'
+import ExperienceField from '@/components/jobs/ExperienceField'
 
 const RichTextEditor = dynamic(() => import('@/components/ui/RichTextEditor'), { ssr: false })
 
@@ -210,18 +211,16 @@ export default function PostJobPage() {
 
         {/* 2. 고용 조건 */}
         <Section step="2" title="고용 조건">
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-2 gap-4 items-start">
             <SelectField
               label="고용형태"
               value={form.employment_type}
               onChange={v => update('employment_type', v)}
               options={[...EMPLOYMENT_TYPES]}
             />
-            <TextField
-              label="경력 요건"
+            <ExperienceField
               value={form.experience_level}
               onChange={v => update('experience_level', v)}
-              placeholder="예: 신입, 3년 이상, 5~8년, 무관"
             />
           </div>
           <TextField

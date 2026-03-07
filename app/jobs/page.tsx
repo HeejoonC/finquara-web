@@ -25,18 +25,11 @@ export default async function JobsPage({ searchParams }: { searchParams: SearchP
   const params = await searchParams
   const supabase = await createClient()
 
-  // Check auth to conditionally show post button
+  // Show post button to any logged-in user
   let canPost = false
   try {
     const { data: { user } } = await supabase.auth.getUser()
-    if (user) {
-      const { data: profile } = await supabase
-        .from('profiles')
-        .select('role')
-        .eq('id', user.id)
-        .single()
-      canPost = profile?.role === 'employer' || profile?.role === 'admin'
-    }
+    canPost = !!user
   } catch {
     // ignore
   }

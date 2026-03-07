@@ -123,9 +123,10 @@ export default async function JobsPage({ searchParams }: { searchParams: SearchP
       ) : (
         <div className="bg-white border border-gray-200 rounded-xl overflow-hidden">
           {/* Table header */}
-          <div className="grid grid-cols-[2fr_1fr_1fr_1fr_auto] gap-x-4 px-5 py-3 bg-gray-50 border-b border-gray-200 text-xs font-semibold text-gray-500 uppercase tracking-wide">
+          <div className="grid grid-cols-[2fr_1fr_1.5fr_1fr_1fr_auto] gap-x-4 px-5 py-3 bg-gray-50 border-b border-gray-200 text-xs font-semibold text-gray-500 uppercase tracking-wide">
             <span>공고 제목 / 회사</span>
             <span>분야</span>
+            <span>세부전문</span>
             <span>경력</span>
             <span>고용형태</span>
             <span className="text-right">등록자 / 등록일</span>
@@ -141,11 +142,13 @@ export default async function JobsPage({ searchParams }: { searchParams: SearchP
                 ? [job.specialization]
                 : []
 
+              const detailTags: string[] = job.detailed_specialties ?? []
+
               return (
                 <Link
                   key={job.id}
                   href={`/jobs/${job.id}`}
-                  className="grid grid-cols-[2fr_1fr_1fr_1fr_auto] gap-x-4 px-5 py-4 items-center hover:bg-blue-50 transition-colors group"
+                  className="grid grid-cols-[2fr_1fr_1.5fr_1fr_1fr_auto] gap-x-4 px-5 py-4 items-center hover:bg-blue-50 transition-colors group"
                 >
                   {/* Title + company */}
                   <div className="min-w-0">
@@ -163,6 +166,24 @@ export default async function JobsPage({ searchParams }: { searchParams: SearchP
                           <span
                             key={s}
                             className="text-xs px-2 py-0.5 bg-blue-50 text-[#2563EB] rounded-full border border-blue-100 whitespace-nowrap"
+                          >
+                            {s}
+                          </span>
+                        ))}
+                      </div>
+                    ) : (
+                      <span className="text-xs text-gray-400">-</span>
+                    )}
+                  </div>
+
+                  {/* 세부전문 */}
+                  <div className="min-w-0">
+                    {detailTags.length > 0 ? (
+                      <div className="flex flex-wrap gap-1">
+                        {detailTags.slice(0, 2).map(s => (
+                          <span
+                            key={s}
+                            className="text-xs px-2 py-0.5 bg-gray-100 text-gray-600 rounded-full whitespace-nowrap"
                           >
                             {s}
                           </span>

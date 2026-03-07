@@ -14,15 +14,14 @@ const RichTextEditor = dynamic(() => import('@/components/ui/RichTextEditor'), {
 
 const WORKPLACE_TYPES = ['대면 근무', '원격 근무', '하이브리드'] as const
 
-export default function PostJobPage() {
+export default function EditJobPage({ params }: { params: Promise<{ id: string }> }) {
   const router = useRouter()
   const supabase = createClient()
 
   const [loading, setLoading] = useState(true)
   const [submitting, setSubmitting] = useState(false)
   const [message, setMessage] = useState('')
-  const [displayName, setDisplayName] = useState('')
-  const [ownerId, setOwnerId] = useState('')
+  const [jobId, setJobId] = useState('')
   const [showPreview, setShowPreview] = useState(false)
 
   const [form, setForm] = useState({
@@ -45,41 +44,42 @@ export default function PostJobPage() {
 
   useEffect(() => {
     async function load() {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser()
-      if (!user) {
-        router.push('/auth/login')
-        return
-      }
+      const { id } = await params
 
-      const { data: profile } = await supabase
-        .from('profiles')
-        .select('role, full_name')
-        .eq('id', user.id)
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) { router.push('/auth/login'); return }
+
+      const { data: job } = await supabase
+        .from('jobs')
+        .select('*')
+        .eq('id', id)
         .single()
 
-      if (!profile) {
-        router.push('/auth/login')
-        return
-      }
+      if (!job || job.owner_id !== user.id) { router.push('/jobs'); return }
 
-      let name = ''
-      if (profile.role === 'admin') {
-        name = 'Finquara'
-      } else if (profile.role === 'employer') {
-        const { data: company } = await supabase
-          .from('companies')
-          .select('company_name')
-          .eq('owner_id', user.id)
-          .single()
-        name = company?.company_name || profile.full_name || user.email || ''
-      } else {
-        name = profile.full_name || user.email || ''
-      }
+      // Split location back into parts
+      const locParts = (job.location ?? '').split(' · ')
+      const location = locParts[0] ?? ''
+      const workplace_type = locParts[1] ?? ''
 
-      setDisplayName(name)
-      setOwnerId(user.id)
+      // Split contact_info back
+      const contactParts = (job.contact_info ?? '').split(' / ')
+
+      setJobId(id)
+      setForm({
+        title: job.title ?? '',
+        location,
+        workplace_type,
+        experience_level: job.experience_level ?? '',
+        employment_type: job.employment_type ?? '',
+        salary_range: job.salary_range ?? '',
+        apply_url: job.apply_url ?? '',
+        contact_email: contactParts[0] ?? '',
+        contact_phone: contactParts[1] ?? '',
+        description: job.description ?? '',
+      })
+      setMainSpecializations(job.main_specializations ?? [])
+      setDetailedSpecialties(job.detailed_specialties ?? [])
       setLoading(false)
     }
     load()
@@ -99,49 +99,34 @@ export default function PostJobPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (!ownerId || !displayName) return
     setSubmitting(true)
     setMessage('')
 
     const locationParts = [form.location, form.workplace_type].filter(Boolean)
     const combinedLocation = locationParts.join(' · ')
 
-    const { error } = await supabase.from('jobs').insert({
-      title: form.title,
-      company: displayName,
-      location: combinedLocation || null,
-      experience_level: form.experience_level || null,
-      employment_type: form.employment_type || null,
-      salary_range: form.salary_range || null,
-      description: form.description || null,
-      apply_url: form.apply_url || null,
-      contact_info: [form.contact_email, form.contact_phone].filter(Boolean).join(' / ') || null,
-      owner_id: ownerId,
-      main_specializations: mainSpecializations,
-      detailed_specialties: detailedSpecialties,
-      is_published: true,
-    })
+    const { error } = await supabase
+      .from('jobs')
+      .update({
+        title: form.title,
+        location: combinedLocation || null,
+        experience_level: form.experience_level || null,
+        employment_type: form.employment_type || null,
+        salary_range: form.salary_range || null,
+        description: form.description || null,
+        apply_url: form.apply_url || null,
+        contact_info: [form.contact_email, form.contact_phone].filter(Boolean).join(' / ') || null,
+        main_specializations: mainSpecializations,
+        detailed_specialties: detailedSpecialties,
+      })
+      .eq('id', jobId)
 
     if (error) {
-      setMessage('등록 중 오류가 발생했습니다: ' + error.message)
+      setMessage('수정 중 오류가 발생했습니다: ' + error.message)
+      setSubmitting(false)
     } else {
-      setMessage('채용공고가 등록되었습니다.')
-      setForm({
-        title: '',
-        location: '',
-        workplace_type: '',
-        experience_level: '',
-        employment_type: '',
-        salary_range: '',
-        apply_url: '',
-        contact_email: '',
-        contact_phone: '',
-        description: '',
-      })
-      setMainSpecializations([])
-      setDetailedSpecialties([])
+      router.push(`/jobs/${jobId}`)
     }
-    setSubmitting(false)
   }
 
   if (loading) {
@@ -155,11 +140,8 @@ export default function PostJobPage() {
   return (
     <div className="max-w-3xl mx-auto px-6 py-10">
       <div className="mb-8">
-        <h1 className="text-2xl font-bold text-[#0B1F3A]">채용공고 등록</h1>
-        <p className="text-gray-500 text-sm mt-1">
-          게시자: <span className="font-medium text-gray-700">{displayName}</span>
-        </p>
-        <p className="text-gray-400 text-xs mt-0.5">등록 후 바로 공개됩니다.</p>
+        <h1 className="text-2xl font-bold text-[#0B1F3A]">채용공고 수정</h1>
+        <p className="text-gray-400 text-xs mt-0.5">수정 후 바로 반영됩니다.</p>
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-5">
@@ -172,13 +154,6 @@ export default function PostJobPage() {
             required
             placeholder="예: 생명보험 계리사 (신입/경력)"
           />
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">게시 회사</label>
-            <div className="w-full px-4 py-2.5 border border-gray-200 rounded-lg text-sm bg-gray-50 text-gray-600">
-              {displayName}
-            </div>
-          </div>
 
           <div className="grid grid-cols-2 gap-4 items-start">
             <TextField
@@ -285,7 +260,7 @@ export default function PostJobPage() {
         <Section step="4" title="모집 요강">
           <div className="flex items-center justify-between mb-2">
             <p className="text-xs text-gray-400">
-              업무내용, 자격요건, 우대사항, 복지 등 자유롭게 작성하세요. 이미지도 삽입 가능합니다.
+              업무내용, 자격요건, 우대사항, 복지 등 자유롭게 작성하세요.
             </p>
             <button
               type="button"
@@ -299,7 +274,7 @@ export default function PostJobPage() {
           {showPreview ? (
             <div className="border border-gray-200 rounded-lg p-5 bg-white min-h-[400px]">
               <h3 className="text-sm font-semibold text-gray-500 mb-3 border-b pb-2">
-                미리보기 — 공고에 표시되는 모습
+                미리보기
               </h3>
               {form.description && form.description !== '<p></p>' ? (
                 <div
@@ -341,40 +316,34 @@ export default function PostJobPage() {
               placeholder="예: 010-1234-5678"
             />
           </div>
-          <p className="text-xs text-gray-400">
-            외부 채용 링크(잡코리아, 사람인, 회사 채용 페이지 등)를 입력해 주세요.
-          </p>
         </Section>
 
         {message && (
-          <p className={`text-sm ${message.includes('오류') ? 'text-red-500' : 'text-green-600'}`}>
-            {message}
-          </p>
+          <p className="text-sm text-red-500">{message}</p>
         )}
 
-        <button
-          type="submit"
-          disabled={submitting}
-          className="w-full py-3 bg-[#2563EB] text-white rounded-lg font-medium hover:opacity-90 disabled:opacity-50 transition-opacity"
-        >
-          {submitting ? '등록 중...' : '채용공고 등록'}
-        </button>
+        <div className="flex gap-3">
+          <button
+            type="button"
+            onClick={() => router.back()}
+            className="flex-1 py-3 border border-gray-300 text-gray-600 rounded-lg font-medium hover:bg-gray-50 transition-colors"
+          >
+            취소
+          </button>
+          <button
+            type="submit"
+            disabled={submitting}
+            className="flex-1 py-3 bg-[#2563EB] text-white rounded-lg font-medium hover:opacity-90 disabled:opacity-50 transition-opacity"
+          >
+            {submitting ? '저장 중...' : '수정 완료'}
+          </button>
+        </div>
       </form>
     </div>
   )
 }
 
-/* ─── Local helpers ─────────────────────────────────────── */
-
-function Section({
-  step,
-  title,
-  children,
-}: {
-  step: string
-  title: string
-  children: React.ReactNode
-}) {
+function Section({ step, title, children }: { step: string; title: string; children: React.ReactNode }) {
   return (
     <div className="bg-white border border-gray-200 rounded-xl p-6 space-y-4">
       <div className="flex items-center gap-2">
@@ -388,18 +357,8 @@ function Section({
   )
 }
 
-function TextField({
-  label,
-  value,
-  onChange,
-  placeholder,
-  required,
-}: {
-  label: string
-  value: string
-  onChange: (v: string) => void
-  placeholder?: string
-  required?: boolean
+function TextField({ label, value, onChange, placeholder, required }: {
+  label: string; value: string; onChange: (v: string) => void; placeholder?: string; required?: boolean
 }) {
   return (
     <div>
@@ -418,16 +377,8 @@ function TextField({
   )
 }
 
-function SelectField({
-  label,
-  value,
-  onChange,
-  options,
-}: {
-  label: string
-  value: string
-  onChange: (v: string) => void
-  options: string[]
+function SelectField({ label, value, onChange, options }: {
+  label: string; value: string; onChange: (v: string) => void; options: string[]
 }) {
   return (
     <div>
@@ -439,9 +390,7 @@ function SelectField({
       >
         <option value="">선택</option>
         {options.map(o => (
-          <option key={o} value={o}>
-            {o}
-          </option>
+          <option key={o} value={o}>{o}</option>
         ))}
       </select>
     </div>

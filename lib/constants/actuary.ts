@@ -8,6 +8,9 @@ export const MAIN_SPECIALIZATIONS = [
   '생명보험',
   '손해보험',
   '재보험',
+  '회계법인',
+  '계리법인',
+  '컨설팅',
   '기타',
 ] as const
 

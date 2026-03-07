@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useTransition } from 'react'
+import React, { useState, useTransition } from 'react'
 import { useRouter, usePathname } from 'next/navigation'
 import {
   MAIN_SPECIALIZATIONS,
@@ -17,6 +17,8 @@ interface Filters {
   type?: string   // comma-separated
 }
 
+const DETAIL_PREVIEW_COUNT = 5
+
 export default function JobFilters({
   current,
   mainOptions = [...MAIN_SPECIALIZATIONS],
@@ -30,6 +32,7 @@ export default function JobFilters({
   const pathname = usePathname()
   const [, startTransition] = useTransition()
   const [keyword, setKeyword] = useState(current.q ?? '')
+  const [detailExpanded, setDetailExpanded] = useState(false)
 
   const selectedMain = current.main ? current.main.split(',').filter(Boolean) : []
   const selectedDetail = current.detail ? current.detail.split(',').filter(Boolean) : []
@@ -93,9 +96,20 @@ export default function JobFilters({
         />
         <FilterRow
           label="세부전문"
-          options={detailOptions}
+          options={detailExpanded ? detailOptions : detailOptions.slice(0, DETAIL_PREVIEW_COUNT)}
           selected={selectedDetail}
           onToggle={v => toggleValue('detail', selectedDetail, v)}
+          expandButton={
+            detailOptions.length > DETAIL_PREVIEW_COUNT ? (
+              <button
+                type="button"
+                onClick={() => setDetailExpanded(v => !v)}
+                className="px-2.5 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-400 hover:bg-gray-200 transition-colors whitespace-nowrap"
+              >
+                {detailExpanded ? '접기 ▲' : `+${detailOptions.length - DETAIL_PREVIEW_COUNT}개 더보기 ▼`}
+              </button>
+            ) : undefined
+          }
         />
         <FilterRow
           label="경력"
@@ -133,11 +147,13 @@ function FilterRow({
   options,
   selected,
   onToggle,
+  expandButton,
 }: {
   label: string
   options: string[]
   selected: string[]
   onToggle: (v: string) => void
+  expandButton?: React.ReactNode
 }) {
   return (
     <div className="flex items-start gap-3">
@@ -160,6 +176,7 @@ function FilterRow({
             </button>
           )
         })}
+        {expandButton}
       </div>
     </div>
   )

@@ -1,6 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
+import JobOwnerActions from './JobOwnerActions'
 
 export default async function JobDetailPage({
   params,
@@ -10,13 +11,14 @@ export default async function JobDetailPage({
   const { id } = await params
   const supabase = await createClient()
 
-  const { data: job } = await supabase
-    .from('jobs')
-    .select('*')
-    .eq('id', id)
-    .single()
+  const [{ data: job }, { data: { user } }] = await Promise.all([
+    supabase.from('jobs').select('*').eq('id', id).single(),
+    supabase.auth.getUser(),
+  ])
 
   if (!job) notFound()
+
+  const isOwner = !!user && user.id === job.owner_id
 
   const mainTags: string[] = job.main_specializations ?? []
   const detailTags: string[] = job.detailed_specialties ?? []
@@ -31,13 +33,16 @@ export default async function JobDetailPage({
 
   return (
     <div className="max-w-3xl mx-auto px-4 py-10">
-      {/* Back nav */}
-      <Link
-        href="/jobs"
-        className="inline-flex items-center gap-1.5 text-sm text-gray-500 hover:text-[#2563EB] transition-colors mb-6"
-      >
-        ← 채용공고 목록
-      </Link>
+      {/* Back nav + owner actions */}
+      <div className="flex items-center justify-between mb-6">
+        <Link
+          href="/jobs"
+          className="inline-flex items-center gap-1.5 text-sm text-gray-500 hover:text-[#2563EB] transition-colors"
+        >
+          ← 채용공고 목록
+        </Link>
+        {isOwner && <JobOwnerActions jobId={id} />}
+      </div>
 
       {/* Header card */}
       <div className="bg-white border border-gray-200 rounded-xl p-6 mb-4">
@@ -147,16 +152,17 @@ export default async function JobDetailPage({
           )
         })()}
 
-        {/* Primary CTA */}
+        {/* Apply link */}
         {job.apply_url && (
-          <div className="mt-5">
+          <div className="mt-4 pt-4 border-t border-gray-100">
+            <span className="text-xs font-semibold text-gray-500 mr-2">지원 링크</span>
             <a
               href={job.apply_url}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 px-6 py-3 bg-[#2563EB] text-white font-medium rounded-lg hover:opacity-90 transition-opacity"
+              className="text-sm text-[#2563EB] hover:underline break-all"
             >
-              지원하기 →
+              {job.apply_url}
             </a>
           </div>
         )}
@@ -179,19 +185,6 @@ export default async function JobDetailPage({
         </div>
       )}
 
-      {/* Bottom CTA */}
-      {job.apply_url && (
-        <div className="mt-6 text-center">
-          <a
-            href={job.apply_url}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex items-center gap-2 px-8 py-3 bg-[#2563EB] text-white font-medium rounded-lg hover:opacity-90 transition-opacity"
-          >
-            지원하기 →
-          </a>
-        </div>
-      )}
     </div>
   )
 }

@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
 import type { Job } from '@/types/database'
 
@@ -81,8 +82,22 @@ export default function AdminJobsPage() {
               {jobs.map(job => (
                 <tr key={job.id} className="hover:bg-gray-50">
                   <td className="px-6 py-4">
-                    <p className="font-medium text-gray-800 max-w-[200px] truncate">{job.title}</p>
+                    <Link
+                      href={`/jobs/${job.id}`}
+                      className="font-medium text-gray-800 hover:text-[#2563EB] transition-colors line-clamp-1 max-w-[220px] block"
+                    >
+                      {job.title}
+                    </Link>
                     {job.location && <p className="text-xs text-gray-500 mt-0.5">{job.location}</p>}
+                    {(job.main_specializations?.length > 0) && (
+                      <div className="flex flex-wrap gap-1 mt-1">
+                        {job.main_specializations.slice(0, 2).map(s => (
+                          <span key={s} className="text-xs px-1.5 py-0.5 bg-blue-50 text-[#2563EB] rounded-full border border-blue-100">
+                            {s}
+                          </span>
+                        ))}
+                      </div>
+                    )}
                   </td>
                   <td className="px-6 py-4 text-gray-600">{job.company}</td>
                   <td className="px-6 py-4">

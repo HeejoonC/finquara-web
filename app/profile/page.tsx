@@ -6,34 +6,7 @@ import { createClient } from '@/lib/supabase/client'
 import MultiSelectChips from '@/components/ui/MultiSelectChips'
 import ToggleSwitch from '@/components/ui/ToggleSwitch'
 import ResumeUploader from '@/components/ui/ResumeUploader'
-
-// ─── Taxonomy constants ────────────────────────────────────────────────────────
-
-const MAIN_SPECIALIZATIONS = ['생명보험', '손해보험', '재보험', '기타']
-
-const DETAILED_SPECIALTIES = [
-  '계리평가 - 결산',
-  '계리평가 - 모델링',
-  '계리평가 - EV',
-  '계리평가 - 가정관리',
-  '가격산출 / 요율개발',
-  '상품 - 개발',
-  '상품 - 관리',
-  '상품 - 위험율 개발',
-  '상품 - 가정관리',
-  '리스크관리 - ALM',
-  '리스크관리 - 지급여력',
-  '준비금 / 손해액 추정',
-  '경영기획 / FP&A',
-  '회계 / 재무보고',
-  '투자 / 자산운용',
-  '퇴직연금 / 연금계리',
-  '재보험 관리',
-  '컨설팅 / 자문',
-  '계리시스템 / Prophet / AXIS / 자동화',
-  '데이터 / 분석 / 경험통계',
-  '기타 (직접입력)',
-]
+import { MAIN_SPECIALIZATIONS, DETAILED_SPECIALTIES } from '@/lib/constants/actuary'
 
 const QUALIFICATIONS = ['FIAK', 'ASA', 'FSA', '한국 일부합격', '미국 일부합격']
 
@@ -237,7 +210,7 @@ export default function ProfilePage() {
 
   const showKoreaSubjects = seeker.qualifications.includes('한국 일부합격')
   const showUsSubjects = seeker.qualifications.includes('미국 일부합격')
-  const showSpecialtyEtc = seeker.detailed_specialties.includes('기타 (직접입력)')
+  const showSpecialtyEtc = seeker.detailed_specialties.includes('기타')
 
   if (loading) {
     return (

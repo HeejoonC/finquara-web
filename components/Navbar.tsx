@@ -36,6 +36,9 @@ export default async function Navbar() {
           <Link href="/jobs" className="text-sm text-gray-600 hover:text-[#2563EB] transition-colors">
             채용공고
           </Link>
+          <Link href="/salary-survey" className="text-sm text-gray-600 hover:text-[#2563EB] transition-colors">
+            Salary Survey
+          </Link>
 
 {profile?.role === 'admin' && (
             <Link href="/admin" className="text-sm text-gray-600 hover:text-[#2563EB] transition-colors">

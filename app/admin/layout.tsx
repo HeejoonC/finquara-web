@@ -32,6 +32,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
             { href: '/admin/taxonomy', label: '분야 관리' },
             { href: '/admin/waitlist', label: '대기목록' },
             { href: '/admin/salary-survey', label: 'Salary Survey' },
+            { href: '/admin/ai-import', label: '🤖 AI 공고 수집' },
           ].map(item => (
             <Link
               key={item.href}

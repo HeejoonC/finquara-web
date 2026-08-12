@@ -32,6 +32,10 @@ yarn-error.log*
 
 # env files (can opt-in for committing if needed)
 .env*
+!.env.example
+
+# AI 수집 스크립트 로그
+/logs
 
 # vercel
 .vercel

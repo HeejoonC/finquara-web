@@ -416,6 +416,8 @@ export default function AIImportPage() {
   const [keywords, setKeywords]     = useState(DEFAULT_KEYWORDS.join(', '))
   const [locations, setLocations]   = useState(DEFAULT_LOCATIONS.join(', '))
   const [maxJobs, setMaxJobs]       = useState(15)
+  const [autoUpload, setAutoUpload] = useState(true)
+  const [autoPublish, setAutoPublish] = useState(false)
 
   // Scraping state
   const [isSearching, setIsSearching] = useState(false)
@@ -462,6 +464,8 @@ export default function AIImportPage() {
       keywords: keywords.split(',').map(s => s.trim()).filter(Boolean),
       locations: locations.split(',').map(s => s.trim()).filter(Boolean),
       maxJobs,
+      autoUpload,
+      autoPublish: autoUpload && autoPublish,
     }
 
     try {
@@ -498,17 +502,18 @@ export default function AIImportPage() {
               setLogs(l => [...l, event.message!])
             }
 
-            if (event.type === 'job_found') {
-              // Add newly found job to top of list if we're on pending tab
-              if (tabStatus === 'pending') {
+            if (event.type === 'job_found' && event.job) {
+              // 저장된 공고를 현재 탭과 상태가 맞을 때만 낙관적으로 끼워 넣는다
+              const incoming = event.job
+              if (incoming.status === tabStatus) {
                 setJobs(prev => [
                   {
-                    id: `temp-${Date.now()}`,
+                    id: `temp-${Date.now()}-${prev.length}`,
                     created_at: new Date().toISOString(),
                     approved_at: null,
                     approved_by: null,
                     job_id: null,
-                    ...event.job!,
+                    ...incoming,
                   } as JobImport,
                   ...prev,
                 ])
@@ -583,25 +588,36 @@ export default function AIImportPage() {
             AI 채용공고 자동 수집
           </h1>
           <p className="text-sm text-gray-500 mt-1">
-            Claude AI가 주요 채용 사이트를 검색해 계리사 채용공고를 자동 수집합니다.
-            관리자가 검토 후 승인하면 채용공고 목록에 게시됩니다.
+            AI가 주요 채용 사이트를 검색해 계리사 채용공고를 자동 수집하고, 채용공고 목록에 자동 등록합니다.
+            중복 공고는 자동으로 걸러집니다.
           </p>
         </div>
 
-        {/* API Key warning */}
+        {/* 환경변수 안내 */}
         <div className="text-xs text-amber-600 bg-amber-50 border border-amber-100 rounded-lg px-3 py-2 max-w-xs">
-          <strong>필요:</strong> <code className="font-mono">ANTHROPIC_API_KEY</code> 환경변수 설정
+          <strong>필요:</strong>{' '}
+          <code className="font-mono">OPENROUTER_API_KEY</code>,{' '}
+          <code className="font-mono">SUPABASE_SERVICE_ROLE_KEY</code>
         </div>
       </div>
 
       {/* Setup notice */}
-      <div className="bg-blue-50 border border-blue-100 rounded-xl p-4 text-sm text-blue-700">
-        <p className="font-medium mb-1">⚙️ 최초 설정: Supabase 테이블 생성 필요</p>
-        <p className="text-xs text-blue-600">
-          아직 <code className="font-mono bg-blue-100 px-1 rounded">job_imports</code> 테이블이 없다면
-          Supabase Dashboard → SQL Editor에서{' '}
-          <code className="font-mono bg-blue-100 px-1 rounded">supabase/migrations/20260311_create_job_imports.sql</code>을 실행해주세요.
-        </p>
+      <div className="bg-blue-50 border border-blue-100 rounded-xl p-4 text-sm text-blue-700 space-y-2">
+        <div>
+          <p className="font-medium mb-1">⚙️ 최초 설정: Supabase 마이그레이션 실행</p>
+          <p className="text-xs text-blue-600">
+            Supabase Dashboard → SQL Editor에서{' '}
+            <code className="font-mono bg-blue-100 px-1 rounded">supabase/migrations/20260311_create_job_imports.sql</code>과{' '}
+            <code className="font-mono bg-blue-100 px-1 rounded">supabase/migrations/v6_job_imports_dedup.sql</code>을 실행해주세요.
+          </p>
+        </div>
+        <div className="pt-2 border-t border-blue-100">
+          <p className="font-medium mb-1">💡 Claude Code 구독 토큰으로 돌리기</p>
+          <p className="text-xs text-blue-600">
+            이 페이지는 OpenRouter(DeepSeek)를 사용합니다. API 비용 없이 Claude Code 구독 토큰으로 수집하려면
+            로컬 터미널에서 <code className="font-mono bg-blue-100 px-1 rounded">npm run scrape</code>를 실행하세요.
+          </p>
+        </div>
       </div>
 
       <div className="grid grid-cols-1 xl:grid-cols-5 gap-6">
@@ -651,6 +667,41 @@ export default function AIImportPage() {
                   disabled={isSearching}
                   className="w-full text-sm border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#2563EB] disabled:opacity-50"
                 />
+              </div>
+
+              {/* 자동 업로드 설정 */}
+              <div className="space-y-3 pt-1 border-t border-gray-100">
+                <label className="flex items-start gap-2 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={autoUpload}
+                    onChange={e => setAutoUpload(e.target.checked)}
+                    disabled={isSearching}
+                    className="mt-0.5 accent-[#2563EB] disabled:opacity-50"
+                  />
+                  <span>
+                    <span className="block text-xs font-medium text-gray-700">채용공고에 자동 등록</span>
+                    <span className="block text-xs text-gray-400">
+                      끄면 검토 대기(pending)로만 저장되고 승인은 직접 해야 합니다.
+                    </span>
+                  </span>
+                </label>
+
+                <label className={`flex items-start gap-2 ${autoUpload ? 'cursor-pointer' : 'opacity-40'}`}>
+                  <input
+                    type="checkbox"
+                    checked={autoPublish}
+                    onChange={e => setAutoPublish(e.target.checked)}
+                    disabled={isSearching || !autoUpload}
+                    className="mt-0.5 accent-[#2563EB] disabled:opacity-50"
+                  />
+                  <span>
+                    <span className="block text-xs font-medium text-gray-700">등록과 동시에 즉시 공개</span>
+                    <span className="block text-xs text-gray-400">
+                      기본값은 비공개입니다. 켜면 검토 없이 바로 사이트에 노출됩니다.
+                    </span>
+                  </span>
+                </label>
               </div>
 
               <button
@@ -703,11 +754,18 @@ export default function AIImportPage() {
             <h3 className="text-xs font-semibold text-gray-700 mb-2">사용 AI 모델</h3>
             <div className="flex items-center gap-2">
               <span className="w-2 h-2 rounded-full bg-[#2563EB]" />
-              <span className="text-xs text-gray-600">Claude Sonnet 4.6</span>
+              <span className="text-xs text-gray-600">DeepSeek V3.2 (OpenRouter)</span>
             </div>
             <p className="text-xs text-gray-400 mt-1">
-              Web Search + Web Fetch 툴 내장<br />
-              분야 자동 분류 · 한국어/영어 지원
+              웹 검색 + 페이지 열람 + 자동 분류<br />
+              한국어/영어 지원 · 저비용 운영
+            </p>
+            <div className="mt-3 pt-3 border-t border-gray-100 flex items-center gap-2">
+              <span className="w-2 h-2 rounded-full bg-gray-300" />
+              <span className="text-xs text-gray-500">로컬: Claude Sonnet 5 (구독 토큰)</span>
+            </div>
+            <p className="text-xs text-gray-400 mt-1">
+              <code className="font-mono">npm run scrape</code> 실행 시 사용
             </p>
           </div>
         </div>

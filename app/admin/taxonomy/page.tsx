@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { MAIN_SPECIALIZATIONS, DETAILED_SPECIALTIES } from '@/lib/constants/actuary'
+import { PageHeader } from '@/components/ui/Form'
 
 interface TaxonomyItem {
   id: string
@@ -110,42 +111,46 @@ export default function TaxonomyAdminPage() {
   }
 
   if (loading) {
-    return <div className="p-8 text-gray-500">불러오는 중...</div>
+    return (
+      <div className="container">
+        <p className="label-sm">Loading…</p>
+      </div>
+    )
   }
 
   if (!tableReady) {
     return (
-      <div className="p-8">
-        <h1 className="text-2xl font-bold text-[#0B1F3A] mb-2">분야 / 세부전문 관리</h1>
-        <div className="bg-yellow-50 border border-yellow-200 rounded-xl p-6 mt-6">
-          <p className="text-sm text-yellow-800 font-medium mb-1">taxonomy_items 테이블이 없습니다.</p>
-          <p className="text-xs text-yellow-700 mb-4">
+      <div className="container">
+        <PageHeader index="Admin / Taxonomy" title="Taxonomy." />
+        <div className="notice mt-12 max-w-[60ch]">
+          <p className="font-semibold">taxonomy_items 테이블이 없습니다.</p>
+          <p className="mt-2">
             Supabase에서 <code>supabase/migrations/v5_taxonomy.sql</code>을 먼저 실행해 주세요.
           </p>
-          <button
-            onClick={seedDefaults}
-            disabled={saving === 'seed'}
-            className="px-4 py-2 bg-[#2563EB] text-white text-sm rounded-lg hover:opacity-90 disabled:opacity-50"
-          >
-            {saving === 'seed' ? '초기화 중...' : '기본값으로 초기화'}
-          </button>
         </div>
+        <button
+          type="button"
+          onClick={seedDefaults}
+          disabled={saving === 'seed'}
+          className="btn mt-8"
+        >
+          {saving === 'seed' ? '초기화 중' : '기본값으로 초기화'}
+        </button>
       </div>
     )
   }
 
   return (
-    <div className="p-8 max-w-4xl">
-      <h1 className="text-2xl font-bold text-[#0B1F3A] mb-1">분야 / 세부전문 관리</h1>
-      <p className="text-gray-500 text-sm mb-8">채용공고·필터·프로필에 사용되는 분야 목록을 관리합니다.</p>
+    <div className="container">
+      <PageHeader
+        index="Admin / Taxonomy"
+        title="Taxonomy."
+        description="채용공고·필터·프로필에 사용되는 분야 목록을 관리합니다."
+      />
 
-      {error && (
-        <div className="mb-4 px-4 py-2 bg-red-50 text-red-600 text-sm rounded-lg border border-red-100">
-          {error}
-        </div>
-      )}
+      {error && <div className="notice mt-10 max-w-[60ch]">{error}</div>}
 
-      <div className="grid grid-cols-2 gap-6">
+      <div className="mt-14 grid grid-cols-2 gap-x-16 gap-y-16 fold-980">
         {/* 주요 분야 */}
         <TaxonomySection
           title="주요 분야"
@@ -171,14 +176,17 @@ export default function TaxonomyAdminPage() {
         />
       </div>
 
-      <div className="mt-8 pt-6 border-t border-gray-200">
-        <p className="text-xs text-gray-400 mb-3">기본값으로 초기화 (현재 목록이 모두 유지됩니다. 중복은 무시)</p>
+      <div className="mt-20 border-t border-line-strong pt-10">
+        <p className="body-sm max-w-[60ch]">
+          기본값 동기화 — 현재 목록은 모두 유지되고 중복은 무시됩니다.
+        </p>
         <button
+          type="button"
           onClick={seedDefaults}
           disabled={saving === 'seed'}
-          className="px-4 py-2 border border-gray-300 text-gray-600 text-sm rounded-lg hover:bg-gray-50 disabled:opacity-50 transition-colors"
+          className="btn btn-ghost mt-6"
         >
-          {saving === 'seed' ? '초기화 중...' : '기본값 동기화'}
+          {saving === 'seed' ? '초기화 중' : '기본값 동기화'}
         </button>
       </div>
     </div>
@@ -204,81 +212,87 @@ function TaxonomySection({
   onMove: (item: TaxonomyItem, dir: 'up' | 'down') => void
   saving: string | null
 }) {
+  const inputId = `tax-${title}`
   return (
-    <div className="bg-white border border-gray-200 rounded-xl p-5">
-      <h2 className="text-sm font-semibold text-gray-800 mb-4">
-        {title}
-        <span className="ml-2 text-xs font-normal text-gray-400">{items.length}개</span>
-      </h2>
+    <section>
+      <div className="flex items-baseline justify-between gap-4 border-b border-line-strong pb-4">
+        <p className="label-sm">{title}</p>
+        <span className="num">{items.length}</span>
+      </div>
 
       {/* Add new */}
-      <div className="flex gap-2 mb-4">
-        <input
-          type="text"
-          value={newValue}
-          onChange={e => onNewValueChange(e.target.value)}
-          onKeyDown={e => e.key === 'Enter' && (e.preventDefault(), onAdd())}
-          placeholder="새 항목 추가..."
-          className="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#2563EB]"
-        />
+      <div className="mt-8 flex items-end gap-4">
+        <div className="flex-1">
+          <label htmlFor={inputId} className="form-label">
+            새 항목
+          </label>
+          <input
+            id={inputId}
+            type="text"
+            value={newValue}
+            onChange={e => onNewValueChange(e.target.value)}
+            onKeyDown={e => e.key === 'Enter' && (e.preventDefault(), onAdd())}
+            placeholder="항목명 입력"
+            className="field"
+          />
+        </div>
         <button
           type="button"
           onClick={onAdd}
           disabled={saving === 'add' || !newValue.trim()}
-          className="px-3 py-2 bg-[#2563EB] text-white text-sm rounded-lg hover:opacity-90 disabled:opacity-40 transition-opacity"
+          className="btn btn-sm"
         >
-          추가
+          Add
         </button>
       </div>
 
       {/* Item list */}
-      <div className="space-y-1 max-h-[480px] overflow-y-auto">
-        {items.length === 0 && (
-          <p className="text-xs text-gray-400 py-4 text-center">항목이 없습니다.</p>
-        )}
+      <div className="mt-8 max-h-[480px] overflow-y-auto border-t border-line">
+        {items.length === 0 && <p className="body-sm py-6">항목이 없습니다.</p>}
         {items.map((item, idx) => (
           <div
             key={item.id}
-            className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-gray-50 group"
+            className="group flex items-center gap-4 border-b border-line py-3"
           >
+            <span className="num w-6 flex-shrink-0 text-right">
+              {String(idx + 1).padStart(2, '0')}
+            </span>
+
+            <span className="flex-1 truncate text-[0.96rem] text-ink">{item.label}</span>
+
             {/* Order buttons */}
-            <div className="flex flex-col gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
+            <div className="flex items-center gap-1 opacity-0 transition-opacity group-hover:opacity-100">
               <button
                 type="button"
+                aria-label="위로"
                 onClick={() => onMove(item, 'up')}
                 disabled={idx === 0 || saving === item.id}
-                className="w-5 h-4 flex items-center justify-center text-gray-400 hover:text-gray-700 disabled:opacity-20 text-xs leading-none"
+                className="px-1.5 text-[0.6rem] leading-none text-muted hover:text-ink disabled:opacity-20"
               >
                 ▲
               </button>
               <button
                 type="button"
+                aria-label="아래로"
                 onClick={() => onMove(item, 'down')}
                 disabled={idx === items.length - 1 || saving === item.id}
-                className="w-5 h-4 flex items-center justify-center text-gray-400 hover:text-gray-700 disabled:opacity-20 text-xs leading-none"
+                className="px-1.5 text-[0.6rem] leading-none text-muted hover:text-ink disabled:opacity-20"
               >
                 ▼
               </button>
+              <button
+                type="button"
+                aria-label="삭제"
+                onClick={() => onDelete(item.id)}
+                disabled={saving === item.id}
+                className="ml-2 px-1 text-base leading-none text-muted hover:text-ink disabled:opacity-20"
+              >
+                ×
+              </button>
             </div>
-
-            {/* Order number */}
-            <span className="text-xs text-gray-300 w-5 text-right flex-shrink-0">{idx + 1}</span>
-
-            {/* Label */}
-            <span className="flex-1 text-sm text-gray-700 truncate">{item.label}</span>
-
-            {/* Delete */}
-            <button
-              type="button"
-              onClick={() => onDelete(item.id)}
-              disabled={saving === item.id}
-              className="opacity-0 group-hover:opacity-100 transition-opacity text-gray-300 hover:text-red-500 text-lg leading-none disabled:opacity-20"
-            >
-              ×
-            </button>
           </div>
         ))}
       </div>
-    </div>
+    </section>
   )
 }

@@ -26,11 +26,7 @@ export default function MultiSelectChips({
           key={option}
           type="button"
           onClick={() => toggle(option)}
-          className={`px-3 py-1.5 rounded-full text-sm border transition-colors ${
-            selected.includes(option)
-              ? 'bg-[#2563EB] text-white border-[#2563EB]'
-              : 'border-gray-300 text-gray-600 hover:border-gray-400'
-          }`}
+          className={`chip${selected.includes(option) ? ' chip-active' : ''}`}
         >
           {option}
         </button>

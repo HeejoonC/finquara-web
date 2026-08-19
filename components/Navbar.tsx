@@ -26,54 +26,50 @@ export default async function Navbar() {
   const profileHref = profile?.role === 'employer' ? '/company/profile' : '/profile'
 
   return (
-    <nav className="bg-white border-b border-gray-200 sticky top-0 z-50">
-      <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
-        <Link href="/" className="text-xl font-bold text-[#0B1F3A]">
+    <header className="site-header">
+      <div className="container flex h-[72px] items-center justify-between gap-6">
+        <Link
+          href="/"
+          className="text-[1.05rem] font-extrabold tracking-[-0.05em] text-ink"
+        >
           Finquara
         </Link>
 
-        <div className="flex items-center gap-6">
-          <Link href="/jobs" className="text-sm text-gray-600 hover:text-[#2563EB] transition-colors">
-            채용공고
+        <nav className="flex items-center gap-6 sm:gap-8">
+          <Link href="/jobs" className="label link">
+            Jobs
           </Link>
-          <Link href="/salary-survey" className="text-sm text-gray-600 hover:text-[#2563EB] transition-colors">
-            Salary Survey
+          <Link href="/salary-survey" className="label link hidden sm:inline-block">
+            Salary
           </Link>
 
-{profile?.role === 'admin' && (
-            <Link href="/admin" className="text-sm text-gray-600 hover:text-[#2563EB] transition-colors">
-              관리자
+          {profile?.role === 'admin' && (
+            <Link href="/admin" className="label link hidden sm:inline-block">
+              Admin
             </Link>
           )}
 
+          <span className="hidden h-4 w-px bg-line-strong sm:block" aria-hidden />
+
           {user ? (
-            <div className="flex items-center gap-4">
-              <Link
-                href={profileHref}
-                className="text-sm text-gray-700 hover:text-[#2563EB] transition-colors font-medium"
-              >
+            <>
+              <Link href={profileHref} className="label link max-w-[14ch] truncate normal-case tracking-[0.06em]">
                 {profile?.full_name || user.email}
               </Link>
               <SignOutButton />
-            </div>
+            </>
           ) : (
-            <div className="flex items-center gap-3">
-              <Link
-                href="/auth/login"
-                className="text-sm text-gray-600 hover:text-[#2563EB] transition-colors"
-              >
-                로그인
+            <>
+              <Link href="/auth/login" className="label link">
+                Log in
               </Link>
-              <Link
-                href="/auth/signup"
-                className="text-sm px-4 py-2 bg-[#2563EB] text-white rounded-lg hover:opacity-90 transition-opacity"
-              >
-                회원가입
+              <Link href="/auth/signup" className="btn btn-sm">
+                Sign up
               </Link>
-            </div>
+            </>
           )}
-        </div>
+        </nav>
       </div>
-    </nav>
+    </header>
   )
 }

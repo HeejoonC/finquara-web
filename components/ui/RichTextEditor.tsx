@@ -84,7 +84,7 @@ export default function RichTextEditor({ value, onChange, placeholder }: RichTex
     editorProps: {
       attributes: {
         class:
-          'prose prose-sm max-w-none min-h-[400px] focus:outline-none px-4 py-3 text-gray-800',
+          'prose-editorial max-w-none min-h-[400px] focus:outline-none px-5 py-4',
       },
     },
   })
@@ -121,8 +121,8 @@ export default function RichTextEditor({ value, onChange, placeholder }: RichTex
       type="button"
       title={title}
       onClick={onClick}
-      className={`px-2 py-1 rounded text-sm font-medium transition-colors ${
-        active ? 'bg-[#2563EB] text-white' : 'hover:bg-gray-100 text-gray-700'
+      className={`px-2.5 py-1.5 text-[0.8rem] font-medium transition-colors ${
+        active ? 'bg-ink text-bg' : 'text-ink-soft hover:text-ink'
       }`}
     >
       {children}
@@ -130,9 +130,9 @@ export default function RichTextEditor({ value, onChange, placeholder }: RichTex
   )
 
   return (
-    <div className="border border-gray-300 rounded-lg overflow-hidden focus-within:ring-2 focus-within:ring-[#2563EB] focus-within:border-transparent">
+    <div className="border border-line-strong focus-within:border-ink">
       {/* Toolbar */}
-      <div className="flex flex-wrap items-center gap-1 px-3 py-2 border-b border-gray-200 bg-gray-50">
+      <div className="flex flex-wrap items-center gap-1 border-b border-line bg-bg-strong px-3 py-2">
         {/* Font Family */}
         <select
           title="글꼴"
@@ -143,7 +143,7 @@ export default function RichTextEditor({ value, onChange, placeholder }: RichTex
               editor.chain().focus().unsetFontFamily().run()
             }
           }}
-          className="text-xs border border-gray-200 rounded px-1.5 py-1 bg-white text-gray-700 focus:outline-none"
+          className="border border-line-strong bg-bg px-2 py-1 text-xs text-ink focus:outline-none"
         >
           {FONT_FAMILIES.map((f) => (
             <option key={f.label} value={f.value}>
@@ -162,7 +162,7 @@ export default function RichTextEditor({ value, onChange, placeholder }: RichTex
               ;(editor.chain().focus() as any).unsetFontSize().run()
             }
           }}
-          className="text-xs border border-gray-200 rounded px-1.5 py-1 bg-white text-gray-700 focus:outline-none w-20"
+          className="w-20 border border-line-strong bg-bg px-2 py-1 text-xs text-ink focus:outline-none"
         >
           <option value="">크기</option>
           {FONT_SIZES.map((s) => (
@@ -172,7 +172,7 @@ export default function RichTextEditor({ value, onChange, placeholder }: RichTex
           ))}
         </select>
 
-        <div className="w-px h-5 bg-gray-200 mx-0.5" />
+        <div className="mx-1 h-4 w-px bg-line-strong" />
 
         {/* Headings */}
         {([1, 2, 3] as const).map((level) =>
@@ -184,7 +184,7 @@ export default function RichTextEditor({ value, onChange, placeholder }: RichTex
           )
         )}
 
-        <div className="w-px h-5 bg-gray-200 mx-0.5" />
+        <div className="mx-1 h-4 w-px bg-line-strong" />
 
         {/* Bold / Italic / Underline / Strike */}
         {toolbarBtn(editor.isActive('bold'), () => editor.chain().focus().toggleBold().run(), '굵게 (Ctrl+B)', <strong>B</strong>)}
@@ -192,16 +192,16 @@ export default function RichTextEditor({ value, onChange, placeholder }: RichTex
         {toolbarBtn(editor.isActive('underline'), () => editor.chain().focus().toggleUnderline().run(), '밑줄', <span className="underline">U</span>)}
         {toolbarBtn(editor.isActive('strike'), () => editor.chain().focus().toggleStrike().run(), '취소선', <span className="line-through">S</span>)}
 
-        <div className="w-px h-5 bg-gray-200 mx-0.5" />
+        <div className="mx-1 h-4 w-px bg-line-strong" />
 
         {/* Lists */}
         {toolbarBtn(editor.isActive('bulletList'), () => editor.chain().focus().toggleBulletList().run(), '목록', '≡')}
         {toolbarBtn(editor.isActive('orderedList'), () => editor.chain().focus().toggleOrderedList().run(), '번호 목록', '①')}
 
-        <div className="w-px h-5 bg-gray-200 mx-0.5" />
+        <div className="mx-1 h-4 w-px bg-line-strong" />
 
         {/* Text Color */}
-        <label title="글자 색상" className="relative cursor-pointer flex items-center gap-0.5 px-2 py-1 rounded hover:bg-gray-100 text-sm text-gray-700">
+        <label title="글자 색상" className="relative flex cursor-pointer items-center gap-0.5 px-2 py-1.5 text-[0.8rem] text-ink-soft hover:text-ink">
           A
           <input
             type="color"
@@ -210,19 +210,19 @@ export default function RichTextEditor({ value, onChange, placeholder }: RichTex
             title="글자 색상"
           />
           <span
-            className="block w-3 h-1 mt-0.5 rounded-sm"
-            style={{ backgroundColor: editor.getAttributes('textStyle').color || '#000' }}
+            className="mt-0.5 block h-1 w-3"
+            style={{ backgroundColor: editor.getAttributes('textStyle').color || '#111111' }}
           />
         </label>
 
-        <div className="w-px h-5 bg-gray-200 mx-0.5" />
+        <div className="mx-1 h-4 w-px bg-line-strong" />
 
         {/* Image Upload */}
         <button
           type="button"
           title="이미지 삽입"
           onClick={() => fileInputRef.current?.click()}
-          className="px-2 py-1 rounded text-sm hover:bg-gray-100 text-gray-700 transition-colors"
+          className="px-2.5 py-1.5 text-[0.8rem] text-ink-soft transition-colors hover:text-ink"
         >
           🖼
         </button>
@@ -238,7 +238,7 @@ export default function RichTextEditor({ value, onChange, placeholder }: RichTex
           }}
         />
 
-        <div className="w-px h-5 bg-gray-200 mx-0.5" />
+        <div className="mx-1 h-4 w-px bg-line-strong" />
 
         {/* Undo / Redo */}
         <button
@@ -246,7 +246,7 @@ export default function RichTextEditor({ value, onChange, placeholder }: RichTex
           title="실행 취소"
           onClick={() => editor.chain().focus().undo().run()}
           disabled={!editor.can().undo()}
-          className="px-2 py-1 rounded text-sm hover:bg-gray-100 text-gray-700 disabled:opacity-30"
+          className="px-2.5 py-1.5 text-[0.8rem] text-ink-soft hover:text-ink disabled:opacity-30"
         >
           ↩
         </button>
@@ -255,16 +255,16 @@ export default function RichTextEditor({ value, onChange, placeholder }: RichTex
           title="다시 실행"
           onClick={() => editor.chain().focus().redo().run()}
           disabled={!editor.can().redo()}
-          className="px-2 py-1 rounded text-sm hover:bg-gray-100 text-gray-700 disabled:opacity-30"
+          className="px-2.5 py-1.5 text-[0.8rem] text-ink-soft hover:text-ink disabled:opacity-30"
         >
           ↪
         </button>
       </div>
 
       {/* Editor area */}
-      <div className="relative bg-white">
+      <div className="relative bg-bg">
         {!value || value === '<p></p>' ? (
-          <p className="absolute top-3 left-4 text-gray-400 text-sm pointer-events-none select-none">
+          <p className="pointer-events-none absolute left-5 top-4 select-none text-[0.98rem] text-muted opacity-70">
             {placeholder}
           </p>
         ) : null}

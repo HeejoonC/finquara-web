@@ -31,170 +31,117 @@ export default async function JobDetailPage({
     day: 'numeric',
   })
 
+  const contactInfo = (job as { contact_info?: string | null }).contact_info ?? ''
+  const [contactEmail = '', contactPhone = ''] = contactInfo.split(' / ')
+
   return (
-    <div className="max-w-3xl mx-auto px-4 py-10">
-      {/* Back nav + owner actions */}
-      <div className="flex items-center justify-between mb-6">
-        <Link
-          href="/jobs"
-          className="inline-flex items-center gap-1.5 text-sm text-gray-500 hover:text-[#2563EB] transition-colors"
-        >
-          ← 채용공고 목록
-        </Link>
-        {isOwner && <JobOwnerActions jobId={id} />}
-      </div>
-
-      {/* Header card */}
-      <div className="bg-white border border-gray-200 rounded-xl p-6 mb-4">
-        {/* Title */}
-        <h1 className="text-2xl font-bold text-[#0B1F3A] leading-snug">{job.title}</h1>
-
-        {/* Company / location / date / poster */}
-        <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5 mt-2 text-sm text-gray-600">
-          <span className="font-medium text-gray-800">{job.company}</span>
-          {job.location && (
-            <>
-              <span className="text-gray-300">·</span>
-              <span>📍 {job.location}</span>
-            </>
-          )}
-          <span className="text-gray-300">·</span>
-          <span className="text-gray-400 text-xs">{postedDate} 등록</span>
+    <main className="section-tight">
+      <div className="container">
+        {/* Back nav + owner actions */}
+        <div className="flex items-center justify-between gap-6 border-b border-line pb-6">
+          <Link href="/jobs" className="label link">
+            ← Back to index
+          </Link>
+          {isOwner && <JobOwnerActions jobId={id} />}
         </div>
 
-        {/* 분야 / 경력 / 세부전문 */}
-        <div className="mt-4 pt-4 border-t border-gray-100 space-y-3">
-          {displayMain.length > 0 && (
-            <div className="flex items-start gap-3">
-              <span className="text-xs font-semibold text-gray-500 w-16 flex-shrink-0 pt-0.5">분야</span>
-              <div className="flex flex-wrap gap-1.5">
-                {displayMain.slice(0, 4).map(s => (
-                  <span key={s} className="text-xs px-2.5 py-1 bg-blue-50 text-[#2563EB] rounded-full border border-blue-100">
-                    {s}
-                  </span>
-                ))}
-              </div>
+        {/* ── Header ── */}
+        <header className="grid grid-cols-[1.5fr_1fr] items-start gap-x-16 gap-y-10 py-16 fold-980">
+          <div>
+            <p className="label-sm">{job.company}</p>
+            <h1 className="h2 mt-6">{job.title}</h1>
+            <div className="mt-8 flex flex-wrap items-center gap-2">
+              {displayMain.slice(0, 4).map(s => (
+                <span key={s} className="tag tag-solid">
+                  {s}
+                </span>
+              ))}
+              {detailTags.slice(0, 4).map(s => (
+                <span key={s} className="tag">
+                  {s}
+                </span>
+              ))}
             </div>
-          )}
-          {job.experience_level && (
-            <div className="flex items-center gap-3">
-              <span className="text-xs font-semibold text-gray-500 w-16 flex-shrink-0">경력</span>
-              <span className="text-sm text-gray-700">{job.experience_level}</span>
-              {job.employment_type && (
-                <>
-                  <span className="text-gray-300">·</span>
-                  <span className="text-xs font-semibold text-gray-500">고용형태</span>
-                  <span className="text-sm text-gray-700">{job.employment_type}</span>
-                </>
-              )}
-              {job.salary_range && (
-                <>
-                  <span className="text-gray-300">·</span>
-                  <span className="text-xs font-semibold text-gray-500">급여</span>
-                  <span className="text-sm text-gray-700">{job.salary_range}</span>
-                </>
-              )}
-            </div>
-          )}
-          {!job.experience_level && (job.employment_type || job.salary_range) && (
-            <div className="flex items-center gap-3">
-              {job.employment_type && (
-                <>
-                  <span className="text-xs font-semibold text-gray-500 w-16 flex-shrink-0">고용형태</span>
-                  <span className="text-sm text-gray-700">{job.employment_type}</span>
-                </>
-              )}
-              {job.salary_range && (
-                <>
-                  {job.employment_type && <span className="text-gray-300">·</span>}
-                  <span className="text-xs font-semibold text-gray-500">급여</span>
-                  <span className="text-sm text-gray-700">{job.salary_range}</span>
-                </>
-              )}
-            </div>
-          )}
-          {detailTags.length > 0 && (
-            <div className="flex items-start gap-3">
-              <span className="text-xs font-semibold text-gray-500 w-16 flex-shrink-0 pt-0.5">세부전문</span>
-              <div className="flex flex-wrap gap-1.5">
-                {detailTags.slice(0, 4).map(s => (
-                  <span key={s} className="text-xs px-2.5 py-1 bg-gray-100 text-gray-600 rounded-full">
-                    {s}
-                  </span>
-                ))}
-              </div>
-            </div>
-          )}
-        </div>
-
-        {/* Contact info */}
-        {(job as any).contact_info && (() => {
-          const parts = ((job as any).contact_info as string).split(' / ')
-          const email = parts[0] || ''
-          const phone = parts[1] || ''
-          return (
-            <div className="mt-4 pt-4 border-t border-gray-100 flex flex-wrap gap-4">
-              {email && (
-                <p className="text-sm text-gray-500">
-                  <span className="font-medium text-gray-700">담당자 이메일</span>
-                  <span className="mx-2 text-gray-300">|</span>
-                  {email}
-                </p>
-              )}
-              {phone && (
-                <p className="text-sm text-gray-500">
-                  <span className="font-medium text-gray-700">담당자 연락처</span>
-                  <span className="mx-2 text-gray-300">|</span>
-                  {phone}
-                </p>
-              )}
-            </div>
-          )
-        })()}
-
-        {/* Apply link */}
-        {job.apply_url && (
-          <div className="mt-4 pt-4 border-t border-gray-100">
-            <span className="text-xs font-semibold text-gray-500 mr-2">지원 링크</span>
-            <a
-              href={job.apply_url}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-sm text-[#2563EB] hover:underline break-all"
-            >
-              {job.apply_url}
-            </a>
           </div>
-        )}
-      </div>
 
-      {/* Description */}
-      {job.description && (
-        <div className="bg-white border border-gray-200 rounded-xl p-6">
-          <h2 className="text-base font-semibold text-gray-800 mb-4">공고 내용</h2>
-          {job.description.startsWith('<') ? (
-            <div
-              className="prose prose-sm max-w-none text-gray-700 leading-relaxed"
-              dangerouslySetInnerHTML={{ __html: job.description }}
-            />
-          ) : (
-            <div className="text-sm text-gray-700 leading-relaxed whitespace-pre-wrap">
-              {job.description}
-            </div>
-          )}
+          {/* 우측 — 사실 나열 */}
+          <div className="border-t border-line-strong">
+            {job.location && <MetaRow label="Location" value={job.location} />}
+            {job.experience_level && <MetaRow label="Experience" value={job.experience_level} />}
+            {job.employment_type && <MetaRow label="Type" value={job.employment_type} />}
+            {job.salary_range && <MetaRow label="Salary" value={job.salary_range} />}
+            <MetaRow label="Posted" value={postedDate} />
+          </div>
+        </header>
+
+        {/* ── Body ── */}
+        <div className="grid grid-cols-[1fr_2.2fr] items-start gap-x-16 gap-y-12 border-t border-line-strong pt-16 fold-980">
+          <div>
+            <p className="label-sm">Description</p>
+          </div>
+
+          <div>
+            {job.description ? (
+              job.description.startsWith('<') ? (
+                <div
+                  className="prose-editorial"
+                  dangerouslySetInnerHTML={{ __html: job.description }}
+                />
+              ) : (
+                <div className="prose-editorial whitespace-pre-wrap">{job.description}</div>
+              )
+            ) : (
+              <p className="body">상세 내용이 등록되지 않았습니다.</p>
+            )}
+
+            {/* Contact */}
+            {(contactEmail || contactPhone) && (
+              <div className="mt-16 border-t border-line pt-8">
+                <p className="label-sm">Contact</p>
+                <div className="mt-5 grid grid-cols-2 gap-6 fold-520">
+                  {contactEmail && <MetaStack label="Email" value={contactEmail} />}
+                  {contactPhone && <MetaStack label="Phone" value={contactPhone} />}
+                </div>
+              </div>
+            )}
+
+            {/* Apply */}
+            {job.apply_url && (
+              <div className="mt-12">
+                <a
+                  href={job.apply_url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="btn"
+                >
+                  지원하기
+                </a>
+                <p className="body-sm mt-4 break-all">{job.apply_url}</p>
+              </div>
+            )}
+          </div>
         </div>
-      )}
+      </div>
+    </main>
+  )
+}
 
+function MetaRow({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="flex items-baseline justify-between gap-6 border-b border-line py-4">
+      <span className="label-sm">{label}</span>
+      <span className="text-right text-[0.98rem] font-medium tracking-[-0.01em] text-ink">
+        {value}
+      </span>
     </div>
   )
 }
 
-function MetaItem({ label, value }: { label: string; value: string }) {
+function MetaStack({ label, value }: { label: string; value: string }) {
   return (
-    <div className="text-sm">
-      <span className="text-gray-500">{label}</span>
-      <span className="mx-1.5 text-gray-300">|</span>
-      <span className="font-medium text-gray-700">{value}</span>
+    <div>
+      <p className="label-sm">{label}</p>
+      <p className="mt-2 break-all text-[0.98rem] text-ink">{value}</p>
     </div>
   )
 }

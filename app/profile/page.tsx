@@ -7,6 +7,7 @@ import MultiSelectChips from '@/components/ui/MultiSelectChips'
 import ToggleSwitch from '@/components/ui/ToggleSwitch'
 import ResumeUploader from '@/components/ui/ResumeUploader'
 import { useTaxonomy } from '@/lib/hooks/useTaxonomy'
+import { FormSection, TextField, TextArea, PageHeader } from '@/components/ui/Form'
 
 const QUALIFICATIONS = ['FIAK', 'ASA', 'FSA', '한국 일부합격', '미국 일부합격']
 
@@ -215,277 +216,235 @@ export default function ProfilePage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center text-gray-500">
-        불러오는 중...
-      </div>
+      <main className="section">
+        <div className="container">
+          <p className="label-sm">Loading…</p>
+        </div>
+      </main>
     )
   }
 
   return (
-    <div className="max-w-2xl mx-auto px-4 py-10">
-      <div className="mb-8">
-        <h1 className="text-2xl font-bold text-[#0B1F3A]">내 프로필</h1>
-        <p className="text-gray-500 text-sm mt-1">구직 활동에 사용될 정보를 입력해 주세요.</p>
-      </div>
+    <main className="section-tight">
+      <div className="container">
+        <PageHeader
+          index="Profile"
+          title={
+            <>
+              Your
+              <br />
+              record.
+            </>
+          }
+          description="구직 활동에 사용될 정보입니다. 분류가 정확할수록 추천 정확도가 올라갑니다."
+        />
 
-      <form onSubmit={handleSave} className="space-y-6">
-
-        {/* ── A. 기본 정보 ── */}
-        <Section title="기본 정보">
-          <Field
-            label="이름"
-            value={profile.full_name}
-            onChange={v => setProfile(p => ({ ...p, full_name: v }))}
-          />
-          <Field
-            label="이메일"
-            value={userEmail}
-            onChange={() => {}}
-            disabled
-            placeholder="이메일은 변경할 수 없습니다"
-          />
-          <Field
-            label="연락처"
-            value={profile.phone}
-            onChange={v => setProfile(p => ({ ...p, phone: v }))}
-            placeholder="010-0000-0000"
-          />
-          <Field
-            label="한 줄 소개"
-            value={seeker.headline}
-            onChange={v => setSeeker(s => ({ ...s, headline: v }))}
-            placeholder="예: 생명보험 계리 5년차, IFRS17 평가 전문"
-          />
-          <div className="grid grid-cols-2 gap-4">
-            <Field
-              label="현재 재직 회사"
-              value={seeker.current_company}
-              onChange={v => setSeeker(s => ({ ...s, current_company: v }))}
-              placeholder="회사명"
-            />
-            <Field
-              label="현재 직함"
-              value={seeker.current_title}
-              onChange={v => setSeeker(s => ({ ...s, current_title: v }))}
-              placeholder="계리팀 대리"
-            />
-          </div>
-          <div className="grid grid-cols-2 gap-4">
-            <Field
-              label="근무 지역"
-              value={seeker.location}
-              onChange={v => setSeeker(s => ({ ...s, location: v }))}
-              placeholder="서울, 경기 등"
-            />
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">경력 연수</label>
-              <select
-                value={seeker.years_experience}
-                onChange={e => setSeeker(s => ({ ...s, years_experience: e.target.value }))}
-                className="w-full px-4 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#2563EB] focus:border-transparent bg-white"
-              >
-                <option value="0">신입</option>
-                {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map(n => (
-                  <option key={n} value={n}>{n}년</option>
-                ))}
-                <option value="11">10년 이상</option>
-              </select>
+        <form onSubmit={handleSave} className="mt-4">
+          {/* ── A. 기본 정보 ── */}
+          <FormSection step="1" title="기본 정보">
+            <div className="grid grid-cols-2 gap-8 fold-720">
+              <TextField
+                label="이름"
+                value={profile.full_name}
+                onChange={v => setProfile(p => ({ ...p, full_name: v }))}
+              />
+              <TextField
+                label="이메일"
+                value={userEmail}
+                onChange={() => {}}
+                disabled
+                placeholder="이메일은 변경할 수 없습니다"
+              />
             </div>
-          </div>
-          <Field
-            label="LinkedIn URL"
-            value={seeker.linkedin_url}
-            onChange={v => setSeeker(s => ({ ...s, linkedin_url: v }))}
-            placeholder="https://linkedin.com/in/..."
-          />
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">자기소개</label>
-            <textarea
+
+            <TextField
+              label="연락처"
+              value={profile.phone}
+              onChange={v => setProfile(p => ({ ...p, phone: v }))}
+              placeholder="010-0000-0000"
+            />
+            <TextField
+              label="한 줄 소개"
+              value={seeker.headline}
+              onChange={v => setSeeker(s => ({ ...s, headline: v }))}
+              placeholder="예: 생명보험 계리 5년차, IFRS17 평가 전문"
+            />
+
+            <div className="grid grid-cols-2 gap-8 fold-720">
+              <TextField
+                label="현재 재직 회사"
+                value={seeker.current_company}
+                onChange={v => setSeeker(s => ({ ...s, current_company: v }))}
+                placeholder="회사명"
+              />
+              <TextField
+                label="현재 직함"
+                value={seeker.current_title}
+                onChange={v => setSeeker(s => ({ ...s, current_title: v }))}
+                placeholder="계리팀 대리"
+              />
+            </div>
+
+            <div className="grid grid-cols-2 gap-8 fold-720">
+              <TextField
+                label="근무 지역"
+                value={seeker.location}
+                onChange={v => setSeeker(s => ({ ...s, location: v }))}
+                placeholder="서울, 경기 등"
+              />
+              <div>
+                <label htmlFor="years-exp" className="form-label">
+                  경력 연수
+                </label>
+                <select
+                  id="years-exp"
+                  value={seeker.years_experience}
+                  onChange={e => setSeeker(s => ({ ...s, years_experience: e.target.value }))}
+                  className="field"
+                >
+                  <option value="0">신입</option>
+                  {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map(n => (
+                    <option key={n} value={n}>
+                      {n}년
+                    </option>
+                  ))}
+                  <option value="11">10년 이상</option>
+                </select>
+              </div>
+            </div>
+
+            <TextField
+              label="LinkedIn URL"
+              value={seeker.linkedin_url}
+              onChange={v => setSeeker(s => ({ ...s, linkedin_url: v }))}
+              placeholder="https://linkedin.com/in/..."
+            />
+            <TextArea
+              label="자기소개"
               value={seeker.bio}
-              onChange={e => setSeeker(s => ({ ...s, bio: e.target.value }))}
-              rows={4}
+              onChange={v => setSeeker(s => ({ ...s, bio: v }))}
+              rows={5}
               placeholder="간단한 자기소개를 작성해 주세요."
-              className="w-full px-4 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#2563EB] focus:border-transparent resize-none"
             />
-          </div>
-        </Section>
+          </FormSection>
 
-        {/* ── B. 주요 분야 ── */}
-        <Section title="주요 분야" description="해당하는 분야를 모두 선택해 주세요.">
-          <MultiSelectChips
-            options={taxonomy.main}
-            selected={seeker.main_specializations}
-            onChange={v => setSeeker(s => ({ ...s, main_specializations: v }))}
-          />
-        </Section>
-
-        {/* ── C. 세부 전문 분야 ── */}
-        <Section title="세부 전문 분야" description="해당하는 업무를 모두 선택해 주세요.">
-          <MultiSelectChips
-            options={taxonomy.detail}
-            selected={seeker.detailed_specialties}
-            onChange={v => setSeeker(s => ({ ...s, detailed_specialties: v }))}
-          />
-          {showSpecialtyEtc && (
-            <Field
-              label="기타 업무 직접 입력"
-              value={seeker.specialty_etc}
-              onChange={v => setSeeker(s => ({ ...s, specialty_etc: v }))}
-              placeholder="직접 입력해 주세요"
-            />
-          )}
-        </Section>
-
-        {/* ── D. 자격 및 시험 ── */}
-        <Section title="자격 및 시험 합격 현황">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">보유 자격</label>
+          {/* ── B. 주요 분야 ── */}
+          <FormSection step="2" title="주요 분야" note="해당하는 분야를 모두 선택해 주세요.">
             <MultiSelectChips
-              options={QUALIFICATIONS}
-              selected={seeker.qualifications}
-              onChange={v => setSeeker(s => ({ ...s, qualifications: v }))}
+              options={taxonomy.main}
+              selected={seeker.main_specializations}
+              onChange={v => setSeeker(s => ({ ...s, main_specializations: v }))}
             />
-          </div>
+          </FormSection>
 
-          {showKoreaSubjects && (
-            <div className="pt-2 space-y-3">
-              <label className="block text-sm font-medium text-gray-700">
-                한국 계리사 일부합격 과목
-              </label>
+          {/* ── C. 세부 전문 분야 ── */}
+          <FormSection step="3" title="세부 전문 분야" note="해당하는 업무를 모두 선택해 주세요.">
+            <MultiSelectChips
+              options={taxonomy.detail}
+              selected={seeker.detailed_specialties}
+              onChange={v => setSeeker(s => ({ ...s, detailed_specialties: v }))}
+            />
+            {showSpecialtyEtc && (
+              <TextField
+                label="기타 업무 직접 입력"
+                value={seeker.specialty_etc}
+                onChange={v => setSeeker(s => ({ ...s, specialty_etc: v }))}
+                placeholder="직접 입력해 주세요"
+              />
+            )}
+          </FormSection>
+
+          {/* ── D. 자격 및 시험 ── */}
+          <FormSection step="4" title="자격 및 시험 합격 현황">
+            <div>
+              <span className="form-label">보유 자격</span>
               <MultiSelectChips
-                options={KOREA_PARTIAL_SUBJECTS}
-                selected={seeker.korea_partial_pass_subjects}
-                onChange={v => setSeeker(s => ({ ...s, korea_partial_pass_subjects: v }))}
+                options={QUALIFICATIONS}
+                selected={seeker.qualifications}
+                onChange={v => setSeeker(s => ({ ...s, qualifications: v }))}
               />
             </div>
-          )}
 
-          {showUsSubjects && (
-            <div className="pt-2 space-y-3">
-              <label className="block text-sm font-medium text-gray-700">
-                미국 계리사 일부합격 과목
-              </label>
-              <MultiSelectChips
-                options={US_PARTIAL_SUBJECTS}
-                selected={seeker.us_partial_pass_subjects}
-                onChange={v => setSeeker(s => ({ ...s, us_partial_pass_subjects: v }))}
-              />
-              {seeker.us_partial_pass_subjects.includes('기타 SOA 시험 / 모듈') && (
-                <Field
-                  label="기타 SOA 시험 / 모듈 직접 입력"
-                  value={seeker.us_partial_pass_etc}
-                  onChange={v => setSeeker(s => ({ ...s, us_partial_pass_etc: v }))}
-                  placeholder="예: PA Bootcamp, DMAC 등"
+            {showKoreaSubjects && (
+              <div>
+                <span className="form-label">한국 계리사 일부합격 과목</span>
+                <MultiSelectChips
+                  options={KOREA_PARTIAL_SUBJECTS}
+                  selected={seeker.korea_partial_pass_subjects}
+                  onChange={v => setSeeker(s => ({ ...s, korea_partial_pass_subjects: v }))}
                 />
-              )}
+              </div>
+            )}
+
+            {showUsSubjects && (
+              <div className="space-y-6">
+                <div>
+                  <span className="form-label">미국 계리사 일부합격 과목</span>
+                  <MultiSelectChips
+                    options={US_PARTIAL_SUBJECTS}
+                    selected={seeker.us_partial_pass_subjects}
+                    onChange={v => setSeeker(s => ({ ...s, us_partial_pass_subjects: v }))}
+                  />
+                </div>
+                {seeker.us_partial_pass_subjects.includes('기타 SOA 시험 / 모듈') && (
+                  <TextField
+                    label="기타 SOA 시험 / 모듈 직접 입력"
+                    value={seeker.us_partial_pass_etc}
+                    onChange={v => setSeeker(s => ({ ...s, us_partial_pass_etc: v }))}
+                    placeholder="예: PA Bootcamp, DMAC 등"
+                  />
+                )}
+              </div>
+            )}
+          </FormSection>
+
+          {/* ── E. 이력서 ── */}
+          <FormSection step="5" title="이력서" note="PDF, DOC, DOCX · 최대 10MB">
+            {userId && (
+              <ResumeUploader
+                userId={userId}
+                currentFileName={seeker.resume_file_name}
+                currentFilePath={seeker.resume_file_path}
+                onUpload={(path, name) =>
+                  setSeeker(s => ({ ...s, resume_file_path: path, resume_file_name: name }))
+                }
+                onRemove={() =>
+                  setSeeker(s => ({ ...s, resume_file_path: null, resume_file_name: null }))
+                }
+              />
+            )}
+          </FormSection>
+
+          {/* ── F. 알림 및 공개 설정 ── */}
+          <FormSection
+            step="6"
+            title="알림 및 공개 설정"
+            note="주간 채용 업데이트는 카카오 알림톡 또는 이메일로 발송될 예정입니다."
+          >
+            <div className="border-t border-line">
+              <ToggleSwitch
+                label="채용 추천 받기"
+                description="기업 담당자가 내 프로필을 검색하고 연락할 수 있습니다."
+                checked={profile.open_to_recommendation}
+                onChange={v => setProfile(p => ({ ...p, open_to_recommendation: v }))}
+              />
+              <ToggleSwitch
+                label="채용 메일링 구독"
+                description="매주 나의 전문 분야에 맞는 채용공고를 보내드립니다."
+                checked={profile.receive_job_mailing}
+                onChange={v => setProfile(p => ({ ...p, receive_job_mailing: v }))}
+              />
             </div>
-          )}
-        </Section>
+          </FormSection>
 
-        {/* ── E. 이력서 ── */}
-        <Section title="이력서">
-          {userId && (
-            <ResumeUploader
-              userId={userId}
-              currentFileName={seeker.resume_file_name}
-              currentFilePath={seeker.resume_file_path}
-              onUpload={(path, name) =>
-                setSeeker(s => ({ ...s, resume_file_path: path, resume_file_name: name }))
-              }
-              onRemove={() =>
-                setSeeker(s => ({ ...s, resume_file_path: null, resume_file_name: null }))
-              }
-            />
-          )}
-        </Section>
-
-        {/* ── F. 알림 및 공개 설정 ── */}
-        <Section title="알림 및 공개 설정">
-          <div className="space-y-4">
-            <ToggleSwitch
-              label="채용 추천 받기"
-              description="기업 담당자가 내 프로필을 검색하고 연락할 수 있습니다."
-              checked={profile.open_to_recommendation}
-              onChange={v => setProfile(p => ({ ...p, open_to_recommendation: v }))}
-            />
-            <ToggleSwitch
-              label="채용 메일링 구독"
-              description="매주 나의 전문 분야에 맞는 채용공고를 보내드립니다."
-              checked={profile.receive_job_mailing}
-              onChange={v => setProfile(p => ({ ...p, receive_job_mailing: v }))}
-            />
+          <div className="border-t border-line-strong pt-10">
+            {message.text && <div className="notice mb-8">{message.text}</div>}
+            <button type="submit" disabled={saving} className="btn">
+              {saving ? '저장 중' : '저장하기'}
+            </button>
           </div>
-          <p className="text-xs text-gray-400 mt-2">
-            * 주간 채용 업데이트는 카카오 알림톡 또는 이메일로 발송될 예정입니다.
-          </p>
-        </Section>
-
-        {message.text && (
-          <p className={`text-sm ${message.error ? 'text-red-500' : 'text-green-600'}`}>
-            {message.text}
-          </p>
-        )}
-
-        <button
-          type="submit"
-          disabled={saving}
-          className="w-full py-3 bg-[#2563EB] text-white rounded-lg font-medium hover:opacity-90 disabled:opacity-50 transition-opacity"
-        >
-          {saving ? '저장 중...' : '저장하기'}
-        </button>
-      </form>
-    </div>
-  )
-}
-
-// ─── Shared sub-components ─────────────────────────────────────────────────────
-
-function Section({
-  title,
-  description,
-  children,
-}: {
-  title: string
-  description?: string
-  children: React.ReactNode
-}) {
-  return (
-    <section className="bg-white border border-gray-200 rounded-xl p-6 space-y-4">
-      <div>
-        <h2 className="text-base font-semibold text-gray-800">{title}</h2>
-        {description && <p className="text-xs text-gray-500 mt-0.5">{description}</p>}
+        </form>
       </div>
-      {children}
-    </section>
-  )
-}
-
-function Field({
-  label,
-  value,
-  onChange,
-  placeholder,
-  disabled,
-  type = 'text',
-}: {
-  label: string
-  value: string
-  onChange: (v: string) => void
-  placeholder?: string
-  disabled?: boolean
-  type?: string
-}) {
-  return (
-    <div>
-      <label className="block text-sm font-medium text-gray-700 mb-1">{label}</label>
-      <input
-        type={type}
-        value={value}
-        onChange={e => onChange(e.target.value)}
-        placeholder={placeholder}
-        disabled={disabled}
-        className="w-full px-4 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#2563EB] focus:border-transparent disabled:bg-gray-50 disabled:text-gray-400"
-      />
-    </div>
+    </main>
   )
 }

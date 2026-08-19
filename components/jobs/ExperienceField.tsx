@@ -58,42 +58,39 @@ export default function ExperienceField({
 
   return (
     <div>
-      <label className="block text-sm font-medium text-gray-700 mb-2">경력 요건</label>
-      <div className="flex gap-4 mb-2">
+      <span className="form-label">경력 요건</span>
+      <div className="flex flex-wrap gap-2">
         {EXP_TYPES.map(t => (
-          <label key={t} className="flex items-center gap-1.5 text-sm cursor-pointer select-none">
-            <input
-              type="radio"
-              name="exp_type"
-              value={t}
-              checked={type === t}
-              onChange={() => handleType(t)}
-              className="accent-[#2563EB]"
-            />
+          <button
+            key={t}
+            type="button"
+            onClick={() => handleType(t)}
+            className={`chip${type === t ? ' chip-active' : ''}`}
+          >
             {t}
-          </label>
+          </button>
         ))}
       </div>
       {type === '경력' && (
-        <div className="flex items-center gap-2 mt-2">
+        <div className="mt-5 flex items-center gap-3">
           <input
             type="number"
             min={0}
             value={from}
             onChange={e => handleFrom(e.target.value)}
             placeholder="0"
-            className="w-20 px-3 py-2 border border-gray-300 rounded-lg text-sm text-center focus:outline-none focus:ring-2 focus:ring-[#2563EB]"
+            className="field-box w-24 text-center"
           />
-          <span className="text-gray-400 text-sm">~</span>
+          <span className="label-sm">~</span>
           <input
             type="number"
             min={0}
             value={to}
             onChange={e => handleTo(e.target.value)}
             placeholder="10"
-            className="w-20 px-3 py-2 border border-gray-300 rounded-lg text-sm text-center focus:outline-none focus:ring-2 focus:ring-[#2563EB]"
+            className="field-box w-24 text-center"
           />
-          <span className="text-gray-400 text-sm">년</span>
+          <span className="label-sm">years</span>
         </div>
       )}
     </div>

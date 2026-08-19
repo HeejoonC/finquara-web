@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
 import type { Job } from '@/types/database'
 import { MAIN_SPECIALIZATIONS, DETAILED_SPECIALTIES, EXPERIENCE_LEVELS, EMPLOYMENT_TYPES } from '@/lib/constants/actuary'
+import { PageHeader } from '@/components/ui/Form'
 
 export default function AdminJobsPage() {
   const supabase = createClient()
@@ -71,19 +72,28 @@ export default function AdminJobsPage() {
   })
 
   return (
-    <div className="p-8">
-      <h1 className="text-2xl font-bold text-[#0B1F3A] mb-1">채용공고 관리</h1>
-      <p className="text-gray-500 text-sm mb-6">전체 {jobs.length}건 · 필터 {filtered.length}건</p>
+    <div className="container">
+      <PageHeader
+        index="Admin / Jobs"
+        title="Listings."
+        description={`전체 ${jobs.length}건 · 필터 적용 ${filtered.length}건.`}
+      />
 
-      <div className="flex gap-3 mb-6">
-        <input
-          type="text"
-          placeholder="제목, 기업, 위치 검색..."
-          value={search}
-          onChange={e => setSearch(e.target.value)}
-          className="flex-1 px-4 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#2563EB]"
-        />
-        <div className="flex gap-1">
+      <div className="mt-14 flex flex-wrap items-end gap-6">
+        <div className="min-w-[240px] flex-1">
+          <label htmlFor="j-search" className="form-label">
+            Search
+          </label>
+          <input
+            id="j-search"
+            type="text"
+            placeholder="제목, 기업, 위치"
+            value={search}
+            onChange={e => setSearch(e.target.value)}
+            className="field"
+          />
+        </div>
+        <div className="flex flex-wrap gap-2 pb-2">
           {([
             { key: 'all', label: '전체' },
             { key: 'pending', label: '승인 대기' },
@@ -91,10 +101,9 @@ export default function AdminJobsPage() {
           ] as const).map(f => (
             <button
               key={f.key}
+              type="button"
               onClick={() => setFilter(f.key)}
-              className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-                filter === f.key ? 'bg-[#2563EB] text-white' : 'bg-white border border-gray-200 text-gray-600 hover:border-gray-300'
-              }`}
+              className={`chip${filter === f.key ? ' chip-active' : ''}`}
             >
               {f.label}
             </button>
@@ -103,71 +112,66 @@ export default function AdminJobsPage() {
       </div>
 
       {loading ? (
-        <div className="text-gray-500 text-sm">불러오는 중...</div>
+        <p className="label-sm mt-12">Loading…</p>
       ) : (
-        <div className="bg-white border border-gray-200 rounded-xl overflow-hidden">
-          <table className="w-full text-sm">
-            <thead className="bg-gray-50 border-b border-gray-200">
-              <tr>
-                <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase">공고 제목</th>
-                <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase">기업</th>
-                <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase">상태</th>
-                <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase">등록일</th>
-                <th className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase">액션</th>
+        <div className="mt-10 overflow-x-auto">
+          <table className="w-full min-w-[860px] text-left">
+            <thead>
+              <tr className="table-head">
+                <th className="py-4 font-semibold">Title</th>
+                <th className="py-4 font-semibold">Company</th>
+                <th className="py-4 font-semibold">Status</th>
+                <th className="py-4 font-semibold">Created</th>
+                <th className="py-4 text-right font-semibold">Actions</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-100">
+            <tbody>
               {filtered.map(job => (
-                <tr key={job.id} className="hover:bg-gray-50">
-                  <td className="px-4 py-4">
-                    <Link
-                      href={`/jobs/${job.id}`}
-                      className="font-medium text-gray-800 hover:text-[#2563EB] transition-colors line-clamp-1 max-w-[200px] block"
-                      target="_blank"
-                    >
+                <tr key={job.id} className="border-b border-line transition-colors hover:bg-bg-strong">
+                  <td className="max-w-[280px] py-5 pr-6">
+                    <Link href={`/jobs/${job.id}`} target="_blank" className="link h4 block truncate text-[1rem]">
                       {job.title}
                     </Link>
-                    {job.location && <p className="text-xs text-gray-500 mt-0.5">{job.location}</p>}
+                    {job.location && <p className="body-sm mt-1 text-[0.82rem]">{job.location}</p>}
                     {job.main_specializations?.length > 0 && (
-                      <div className="flex flex-wrap gap-1 mt-1">
+                      <div className="mt-2 flex flex-wrap gap-1">
                         {job.main_specializations.slice(0, 2).map(s => (
-                          <span key={s} className="text-xs px-1.5 py-0.5 bg-blue-50 text-[#2563EB] rounded-full border border-blue-100">{s}</span>
+                          <span key={s} className="tag">
+                            {s}
+                          </span>
                         ))}
                       </div>
                     )}
                   </td>
-                  <td className="px-4 py-4 text-gray-600">{job.company}</td>
-                  <td className="px-4 py-4">
-                    <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${job.is_published ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'}`}>
+                  <td className="body-sm py-5 pr-6">{job.company}</td>
+                  <td className="py-5 pr-6">
+                    <span className={`tag${job.is_published ? '' : ' tag-solid'}`}>
                       {job.is_published ? '게시 중' : '대기 중'}
                     </span>
                   </td>
-                  <td className="px-4 py-4 text-gray-500 text-xs">
+                  <td className="num py-5 pr-6">
                     {new Date(job.created_at).toLocaleDateString('ko-KR')}
                   </td>
-                  <td className="px-4 py-4">
-                    <div className="flex gap-1.5">
-                      <button
-                        onClick={() => setEditing(job)}
-                        className="px-3 py-1 rounded text-xs font-medium bg-blue-50 text-blue-700 hover:bg-blue-100 transition-colors"
-                      >
-                        수정
+                  <td className="py-5">
+                    <div className="flex justify-end gap-5">
+                      <button type="button" onClick={() => setEditing(job)} className="btn-text">
+                        Edit
                       </button>
                       <button
+                        type="button"
                         onClick={() => togglePublish(job.id, job.is_published)}
                         disabled={updating === job.id}
-                        className={`px-3 py-1 rounded text-xs font-medium transition-colors disabled:opacity-50 ${
-                          job.is_published ? 'bg-gray-100 text-gray-700 hover:bg-gray-200' : 'bg-green-100 text-green-700 hover:bg-green-200'
-                        }`}
+                        className="btn-text"
                       >
-                        {job.is_published ? '비공개' : '승인'}
+                        {job.is_published ? 'Unpublish' : 'Approve'}
                       </button>
                       <button
+                        type="button"
                         onClick={() => deleteJob(job.id)}
                         disabled={updating === job.id}
-                        className="px-3 py-1 rounded text-xs font-medium bg-red-50 text-red-600 hover:bg-red-100 transition-colors disabled:opacity-50"
+                        className="btn-text"
                       >
-                        삭제
+                        Delete
                       </button>
                     </div>
                   </td>
@@ -176,72 +180,79 @@ export default function AdminJobsPage() {
             </tbody>
           </table>
           {filtered.length === 0 && (
-            <div className="text-center py-12 text-gray-400 text-sm">채용공고가 없습니다.</div>
+            <p className="body border-t border-line py-16">채용공고가 없습니다.</p>
           )}
         </div>
       )}
 
       {editing && (
-        <div className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl shadow-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
-            <div className="flex items-center justify-between p-6 border-b border-gray-100 sticky top-0 bg-white">
-              <h2 className="text-lg font-semibold text-gray-800">채용공고 수정</h2>
-              <button onClick={() => setEditing(null)} className="text-gray-400 hover:text-gray-600 text-2xl leading-none">×</button>
+        <div
+          className="fixed inset-0 z-[80] flex items-center justify-center p-4"
+          style={{ background: 'rgba(17,17,17,0.45)' }}
+        >
+          <div className="panel-float max-h-[90vh] w-full max-w-3xl overflow-y-auto">
+            <div className="sticky top-0 z-10 flex items-center justify-between gap-6 border-b border-line bg-bg px-8 py-6">
+              <div>
+                <p className="label-sm">Edit listing</p>
+                <h2 className="h4 mt-2">채용공고 수정</h2>
+              </div>
+              <button
+                type="button"
+                onClick={() => setEditing(null)}
+                aria-label="닫기"
+                className="btn-text text-lg"
+              >
+                ×
+              </button>
             </div>
 
-            <div className="p-6 space-y-4">
-              <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-8 px-8 py-8">
+              <div className="grid grid-cols-2 gap-8 fold-720">
+                <ModalField
+                  label="공고 제목 *"
+                  value={editing.title}
+                  onChange={v => setEditing({ ...editing, title: v })}
+                />
+                <ModalField
+                  label="기업명 *"
+                  value={editing.company}
+                  onChange={v => setEditing({ ...editing, company: v })}
+                />
+                <ModalField
+                  label="근무지"
+                  value={editing.location || ''}
+                  onChange={v => setEditing({ ...editing, location: v })}
+                  placeholder="서울, 부산 등"
+                />
+                <ModalField
+                  label="연봉"
+                  value={editing.salary_range || ''}
+                  onChange={v => setEditing({ ...editing, salary_range: v })}
+                  placeholder="협의 가능"
+                />
                 <div>
-                  <label className="block text-xs font-medium text-gray-700 mb-1">공고 제목 *</label>
-                  <input
-                    value={editing.title}
-                    onChange={e => setEditing({ ...editing, title: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#2563EB]"
-                  />
-                </div>
-                <div>
-                  <label className="block text-xs font-medium text-gray-700 mb-1">기업명 *</label>
-                  <input
-                    value={editing.company}
-                    onChange={e => setEditing({ ...editing, company: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#2563EB]"
-                  />
-                </div>
-                <div>
-                  <label className="block text-xs font-medium text-gray-700 mb-1">근무지</label>
-                  <input
-                    value={editing.location || ''}
-                    onChange={e => setEditing({ ...editing, location: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#2563EB]"
-                    placeholder="서울, 부산 등"
-                  />
-                </div>
-                <div>
-                  <label className="block text-xs font-medium text-gray-700 mb-1">연봉</label>
-                  <input
-                    value={editing.salary_range || ''}
-                    onChange={e => setEditing({ ...editing, salary_range: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#2563EB]"
-                    placeholder="협의 가능"
-                  />
-                </div>
-                <div>
-                  <label className="block text-xs font-medium text-gray-700 mb-1">경력</label>
+                  <label htmlFor="m-exp" className="form-label">
+                    경력
+                  </label>
                   <select
+                    id="m-exp"
                     value={editing.experience_level || ''}
                     onChange={e => setEditing({ ...editing, experience_level: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#2563EB]"
+                    className="field"
                   >
                     <option value="">선택</option>
                     {EXPERIENCE_LEVELS.map(l => <option key={l} value={l}>{l}</option>)}
                   </select>
                 </div>
                 <div>
-                  <label className="block text-xs font-medium text-gray-700 mb-1">고용형태</label>
+                  <label htmlFor="m-type" className="form-label">
+                    고용형태
+                  </label>
                   <select
+                    id="m-type"
                     value={editing.employment_type || ''}
                     onChange={e => setEditing({ ...editing, employment_type: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#2563EB]"
+                    className="field"
                   >
                     <option value="">선택</option>
                     {EMPLOYMENT_TYPES.map(t => <option key={t} value={t}>{t}</option>)}
@@ -249,29 +260,22 @@ export default function AdminJobsPage() {
                 </div>
               </div>
 
-              <div>
-                <label className="block text-xs font-medium text-gray-700 mb-1">지원 URL</label>
-                <input
-                  value={editing.apply_url || ''}
-                  onChange={e => setEditing({ ...editing, apply_url: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#2563EB]"
-                  placeholder="https://..."
-                />
-              </div>
+              <ModalField
+                label="지원 URL"
+                value={editing.apply_url || ''}
+                onChange={v => setEditing({ ...editing, apply_url: v })}
+                placeholder="https://..."
+              />
 
               <div>
-                <label className="block text-xs font-medium text-gray-700 mb-2">주요 분야</label>
+                <span className="form-label">주요 분야</span>
                 <div className="flex flex-wrap gap-2">
                   {MAIN_SPECIALIZATIONS.map(s => (
                     <button
                       key={s}
                       type="button"
                       onClick={() => setEditing({ ...editing, main_specializations: toggleArrayItem(editing.main_specializations || [], s) })}
-                      className={`px-3 py-1 rounded-full text-xs font-medium transition-colors ${
-                        editing.main_specializations?.includes(s)
-                          ? 'bg-[#2563EB] text-white'
-                          : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-                      }`}
+                      className={`chip${editing.main_specializations?.includes(s) ? ' chip-active' : ''}`}
                     >
                       {s}
                     </button>
@@ -280,18 +284,14 @@ export default function AdminJobsPage() {
               </div>
 
               <div>
-                <label className="block text-xs font-medium text-gray-700 mb-2">세부 전문분야</label>
-                <div className="flex flex-wrap gap-1.5 max-h-32 overflow-y-auto">
+                <span className="form-label">세부 전문분야</span>
+                <div className="flex max-h-40 flex-wrap gap-2 overflow-y-auto">
                   {DETAILED_SPECIALTIES.map(s => (
                     <button
                       key={s}
                       type="button"
                       onClick={() => setEditing({ ...editing, detailed_specialties: toggleArrayItem(editing.detailed_specialties || [], s) })}
-                      className={`px-2.5 py-1 rounded-full text-xs font-medium transition-colors ${
-                        editing.detailed_specialties?.includes(s)
-                          ? 'bg-[#2563EB] text-white'
-                          : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-                      }`}
+                      className={`chip${editing.detailed_specialties?.includes(s) ? ' chip-active' : ''}`}
                     >
                       {s}
                     </button>
@@ -300,34 +300,58 @@ export default function AdminJobsPage() {
               </div>
 
               <div>
-                <label className="block text-xs font-medium text-gray-700 mb-1">공고 내용</label>
+                <label htmlFor="m-desc" className="form-label">
+                  공고 내용
+                </label>
                 <textarea
+                  id="m-desc"
                   value={editing.description || ''}
                   onChange={e => setEditing({ ...editing, description: e.target.value })}
-                  rows={8}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#2563EB] resize-none"
+                  rows={10}
+                  className="field-box"
                 />
               </div>
             </div>
 
-            <div className="flex gap-3 p-6 border-t border-gray-100 sticky bottom-0 bg-white">
-              <button
-                onClick={() => setEditing(null)}
-                className="flex-1 py-2.5 border border-gray-300 text-gray-700 rounded-lg text-sm font-medium hover:bg-gray-50 transition-colors"
-              >
-                취소
+            <div className="sticky bottom-0 flex flex-wrap gap-4 border-t border-line bg-bg px-8 py-6">
+              <button type="button" onClick={saveEdit} disabled={saving} className="btn">
+                {saving ? '저장 중' : '저장'}
               </button>
-              <button
-                onClick={saveEdit}
-                disabled={saving}
-                className="flex-1 py-2.5 bg-[#2563EB] text-white rounded-lg text-sm font-medium hover:opacity-90 disabled:opacity-50 transition-opacity"
-              >
-                {saving ? '저장 중...' : '저장'}
+              <button type="button" onClick={() => setEditing(null)} className="btn btn-ghost">
+                취소
               </button>
             </div>
           </div>
         </div>
       )}
+    </div>
+  )
+}
+
+function ModalField({
+  label,
+  value,
+  onChange,
+  placeholder,
+}: {
+  label: string
+  value: string
+  onChange: (v: string) => void
+  placeholder?: string
+}) {
+  const id = `m-${label.replace(/\s+/g, '-')}`
+  return (
+    <div>
+      <label htmlFor={id} className="form-label">
+        {label}
+      </label>
+      <input
+        id={id}
+        value={value}
+        onChange={e => onChange(e.target.value)}
+        placeholder={placeholder}
+        className="field"
+      />
     </div>
   )
 }

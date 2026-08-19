@@ -25,14 +25,7 @@ function toggle<T>(arr: T[], val: T): T[] {
 // ── Chip component ────────────────────────────────────────────────────────
 function Chip({ label, active, onClick }: { label: string; active: boolean; onClick: () => void }) {
   return (
-    <button
-      onClick={onClick}
-      className={`px-2.5 py-1 rounded-full text-xs font-medium transition-colors whitespace-nowrap ${
-        active
-          ? 'bg-[#2563EB] text-white'
-          : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-      }`}
-    >
+    <button type="button" onClick={onClick} className={`chip${active ? ' chip-active' : ''}`}>
       {label}
     </button>
   )
@@ -41,9 +34,9 @@ function Chip({ label, active, onClick }: { label: string; active: boolean; onCl
 // ── FilterSection ─────────────────────────────────────────────────────────
 function FilterSection({ title, children }: { title: string; children: React.ReactNode }) {
   return (
-    <div className="space-y-2">
-      <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider">{title}</p>
-      <div className="flex flex-wrap gap-1.5">{children}</div>
+    <div>
+      <p className="label-sm">{title}</p>
+      <div className="mt-3 flex flex-wrap gap-2">{children}</div>
     </div>
   )
 }
@@ -59,18 +52,15 @@ function ToggleRow({
   onChange: (v: string) => void
 }) {
   return (
-    <div className="flex rounded-lg border border-gray-200 overflow-hidden">
+    <div className="flex border border-line-strong">
       {options.map((opt, i) => (
         <button
           key={opt.value}
+          type="button"
           onClick={() => onChange(opt.value)}
-          className={`flex-1 py-1.5 text-xs font-medium transition-colors ${
-            i > 0 ? 'border-l border-gray-200' : ''
-          } ${
-            value === opt.value
-              ? 'bg-[#2563EB] text-white'
-              : 'bg-white text-gray-600 hover:bg-gray-50'
-          }`}
+          className={`flex-1 py-2.5 text-[0.66rem] font-semibold uppercase tracking-[0.14em] transition-colors ${
+            i > 0 ? 'border-l border-line-strong' : ''
+          } ${value === opt.value ? 'bg-ink text-bg' : 'text-muted hover:text-ink'}`}
         >
           {opt.label}
         </button>
@@ -94,20 +84,21 @@ export default function SalarySurveyFilters({ filters, onChange }: Props) {
     onChange({ ...filters, ...partial })
   }
 
-  const isActive = (
-    filters.industry.length ||
-    filters.function.length ||
-    filters.location.length ||
-    filters.credential.length ||
+  const activeCount =
+    filters.industry.length +
+    filters.function.length +
+    filters.location.length +
+    filters.credential.length +
     filters.companyType.length
-  ) > 0
+
+  const isActive = activeCount > 0
 
   const displayedFunctions = fnExpanded
     ? DETAILED_SPECIALTIES
     : DETAILED_SPECIALTIES.slice(0, 8)
 
   const panel = (
-    <div className="space-y-5">
+    <div className="space-y-8">
       {/* Survey Year */}
       <FilterSection title="조사 연도">
         {SURVEY_YEARS.map(y => (
@@ -120,23 +111,23 @@ export default function SalarySurveyFilters({ filters, onChange }: Props) {
         ))}
       </FilterSection>
 
-      <div className="border-t border-gray-100" />
+      <hr className="rule" />
 
       {/* Compensation metric */}
-      <div className="space-y-2">
-        <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider">보상 기준</p>
+      <div>
+        <p className="label-sm mb-3">보상 기준</p>
         <ToggleRow
           options={[
-            { label: 'Base Salary', value: 'baseSalary' },
-            { label: 'Total Comp', value: 'totalComp' },
+            { label: 'Base', value: 'baseSalary' },
+            { label: 'Total', value: 'totalComp' },
           ]}
           value={filters.compensation}
           onChange={v => set({ compensation: v as 'baseSalary' | 'totalComp' })}
         />
       </div>
 
-      <div className="space-y-2">
-        <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider">표시 방식</p>
+      <div>
+        <p className="label-sm mb-3">표시 방식</p>
         <ToggleRow
           options={[
             { label: 'Median', value: 'median' },
@@ -145,18 +136,18 @@ export default function SalarySurveyFilters({ filters, onChange }: Props) {
           value={filters.metric}
           onChange={v => set({ metric: v as 'median' | 'average' })}
         />
-        <label className="flex items-center gap-2 cursor-pointer mt-1">
+        <label className="mt-4 flex cursor-pointer select-none items-center gap-2.5">
           <input
             type="checkbox"
             checked={filters.showP25P75}
             onChange={e => set({ showP25P75: e.target.checked })}
-            className="rounded border-gray-300 text-[#2563EB] focus:ring-[#2563EB]"
+            className="h-3.5 w-3.5 accent-ink"
           />
-          <span className="text-xs text-gray-600">P25 / P75 밴드 표시</span>
+          <span className="label-sm normal-case tracking-[0.08em]">P25 / P75 밴드 표시</span>
         </label>
       </div>
 
-      <div className="border-t border-gray-100" />
+      <hr className="rule" />
 
       {/* Industry (보험권역) */}
       <FilterSection title="보험권역">
@@ -180,11 +171,8 @@ export default function SalarySurveyFilters({ filters, onChange }: Props) {
             onClick={() => set({ function: toggle(filters.function, fn as SurveyFunction) })}
           />
         ))}
-        <button
-          onClick={() => setFnExpanded(!fnExpanded)}
-          className="text-xs text-[#2563EB] hover:underline px-1"
-        >
-          {fnExpanded ? '접기 ↑' : `+${DETAILED_SPECIALTIES.length - 8}개 더보기`}
+        <button type="button" onClick={() => setFnExpanded(!fnExpanded)} className="chip">
+          {fnExpanded ? '접기' : `+${DETAILED_SPECIALTIES.length - 8} more`}
         </button>
       </FilterSection>
 
@@ -227,6 +215,7 @@ export default function SalarySurveyFilters({ filters, onChange }: Props) {
       {/* Reset */}
       {isActive && (
         <button
+          type="button"
           onClick={() =>
             onChange({
               ...filters,
@@ -237,9 +226,9 @@ export default function SalarySurveyFilters({ filters, onChange }: Props) {
               companyType: [],
             })
           }
-          className="w-full text-xs text-gray-500 hover:text-[#2563EB] py-2 border border-gray-200 rounded-lg transition-colors"
+          className="btn btn-ghost btn-sm w-full"
         >
-          필터 초기화
+          Reset filters
         </button>
       )}
     </div>
@@ -247,47 +236,25 @@ export default function SalarySurveyFilters({ filters, onChange }: Props) {
 
   return (
     <>
-      {/* Mobile toggle button */}
-      <div className="lg:hidden mb-4">
+      {/* Mobile toggle */}
+      <div className="lg:hidden">
         <button
+          type="button"
           onClick={() => setMobileOpen(!mobileOpen)}
-          className="w-full flex items-center justify-between px-4 py-3 bg-white border border-gray-200 rounded-xl text-sm font-medium text-gray-700"
+          className="flex w-full items-center justify-between border-y border-line-strong py-4"
         >
-          <span className="flex items-center gap-2">
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2a1 1 0 01-.293.707L13 13.414V19a1 1 0 01-.553.894l-4 2A1 1 0 017 21v-7.586L3.293 6.707A1 1 0 013 6V4z" />
-            </svg>
-            필터 조건
-            {isActive && (
-              <span className="inline-flex items-center justify-center w-4 h-4 text-xs bg-[#2563EB] text-white rounded-full">
-                {filters.industry.length + filters.function.length + filters.location.length + filters.credential.length + filters.companyType.length}
-              </span>
-            )}
-          </span>
-          <svg
-            className={`w-4 h-4 text-gray-400 transition-transform ${mobileOpen ? 'rotate-180' : ''}`}
-            fill="none" stroke="currentColor" viewBox="0 0 24 24"
-          >
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-          </svg>
+          <span className="label-sm">Filters{isActive && ` · ${activeCount}`}</span>
+          <span className="label-sm">{mobileOpen ? '−' : '+'}</span>
         </button>
-        {mobileOpen && (
-          <div className="mt-2 bg-white border border-gray-200 rounded-xl p-4">
-            {panel}
-          </div>
-        )}
+        {mobileOpen && <div className="py-8">{panel}</div>}
       </div>
 
       {/* Desktop sticky sidebar */}
       <div className="hidden lg:block">
-        <div className="bg-white border border-gray-200 rounded-xl p-5 sticky top-24 max-h-[calc(100vh-8rem)] overflow-y-auto">
-          <div className="flex items-center justify-between mb-5">
-            <h2 className="text-sm font-semibold text-gray-900">필터 조건</h2>
-            {isActive && (
-              <span className="text-xs text-[#2563EB] font-medium">
-                {filters.industry.length + filters.function.length + filters.location.length + filters.credential.length + filters.companyType.length}개 적용됨
-              </span>
-            )}
+        <div className="sticky top-[92px] max-h-[calc(100vh-8rem)] overflow-y-auto border-t border-line-strong pr-2 pt-6">
+          <div className="mb-8 flex items-baseline justify-between gap-4">
+            <h2 className="label-sm">Filters</h2>
+            {isActive && <span className="num">{activeCount}</span>}
           </div>
           {panel}
         </div>

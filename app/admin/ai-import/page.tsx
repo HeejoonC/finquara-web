@@ -13,35 +13,19 @@ import {
 // ── Helpers ───────────────────────────────────────────────────────────────
 
 function StatusBadge({ status }: { status: JobImport['status'] }) {
+  // 색 대신 채움(대기) / 윤곽(처리됨)으로 상태를 구분한다
   const map = {
-    pending:  'bg-yellow-50 text-yellow-700 border-yellow-100',
-    approved: 'bg-green-50  text-green-700  border-green-100',
-    rejected: 'bg-red-50    text-red-600    border-red-100',
+    pending:  'tag tag-solid',
+    approved: 'tag',
+    rejected: 'tag opacity-60',
   }
   const labels = { pending: '검토 대기', approved: '승인됨', rejected: '거절됨' }
-  return (
-    <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium border ${map[status]}`}>
-      {labels[status]}
-    </span>
-  )
+  return <span className={map[status]}>{labels[status]}</span>
 }
 
 function SiteChip({ site }: { site: string | null }) {
   if (!site) return null
-  const colors: Record<string, string> = {
-    '사람인':      'bg-blue-50   text-blue-700',
-    '잡코리아':    'bg-purple-50 text-purple-700',
-    'LinkedIn':    'bg-sky-50    text-sky-700',
-    'JobsDB HK':   'bg-red-50    text-red-700',
-    'JobsDB SG':   'bg-orange-50 text-orange-700',
-    'eFinancialCareers HK': 'bg-pink-50 text-pink-700',
-    'eFinancialCareers SG': 'bg-rose-50 text-rose-700',
-  }
-  return (
-    <span className={`px-1.5 py-0.5 rounded text-xs font-medium ${colors[site] ?? 'bg-gray-100 text-gray-600'}`}>
-      {site}
-    </span>
-  )
+  return <span className="tag">{site}</span>
 }
 
 // ── Edit Modal ────────────────────────────────────────────────────────────
@@ -62,11 +46,11 @@ function EditModal({
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40">
-      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
-        <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
-          <h2 className="text-base font-semibold text-gray-900">공고 수정 후 승인</h2>
-          <button onClick={onClose} className="text-gray-400 hover:text-gray-600 p-1">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[rgba(17,17,17,0.45)]">
+      <div className="bg-bg shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+        <div className="flex items-center justify-between px-6 py-4 border-b border-line">
+          <h2 className="text-base font-semibold text-ink">공고 수정 후 승인</h2>
+          <button onClick={onClose} className="text-muted hover:text-ink p-1">
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
             </svg>
@@ -77,19 +61,19 @@ function EditModal({
           {/* Title & Company */}
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-xs font-medium text-gray-600 mb-1">직책명 *</label>
+              <label className="form-label">직책명 *</label>
               <input
                 value={form.title}
                 onChange={e => setForm(f => ({ ...f, title: e.target.value }))}
-                className="w-full text-sm border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#2563EB]"
+                className="field-box"
               />
             </div>
             <div>
-              <label className="block text-xs font-medium text-gray-600 mb-1">회사명 *</label>
+              <label className="form-label">회사명 *</label>
               <input
                 value={form.company}
                 onChange={e => setForm(f => ({ ...f, company: e.target.value }))}
-                className="w-full text-sm border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#2563EB]"
+                className="field-box"
               />
             </div>
           </div>
@@ -97,19 +81,19 @@ function EditModal({
           {/* Location & Experience */}
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-xs font-medium text-gray-600 mb-1">지역</label>
+              <label className="form-label">지역</label>
               <input
                 value={form.location ?? ''}
                 onChange={e => setForm(f => ({ ...f, location: e.target.value }))}
-                className="w-full text-sm border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#2563EB]"
+                className="field-box"
               />
             </div>
             <div>
-              <label className="block text-xs font-medium text-gray-600 mb-1">경력</label>
+              <label className="form-label">경력</label>
               <select
                 value={form.experience_level ?? ''}
                 onChange={e => setForm(f => ({ ...f, experience_level: e.target.value as JobImport['experience_level'] }))}
-                className="w-full text-sm border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#2563EB]"
+                className="field-box"
               >
                 <option value="">선택</option>
                 {EXPERIENCE_LEVELS.map(l => <option key={l}>{l}</option>)}
@@ -120,39 +104,38 @@ function EditModal({
           {/* Employment type & Salary */}
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-xs font-medium text-gray-600 mb-1">고용형태</label>
+              <label className="form-label">고용형태</label>
               <select
                 value={form.employment_type ?? ''}
                 onChange={e => setForm(f => ({ ...f, employment_type: e.target.value as JobImport['employment_type'] }))}
-                className="w-full text-sm border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#2563EB]"
+                className="field-box"
               >
                 <option value="">선택</option>
                 {EMPLOYMENT_TYPES.map(t => <option key={t}>{t}</option>)}
               </select>
             </div>
             <div>
-              <label className="block text-xs font-medium text-gray-600 mb-1">급여</label>
+              <label className="form-label">급여</label>
               <input
                 value={form.salary_range ?? ''}
                 onChange={e => setForm(f => ({ ...f, salary_range: e.target.value }))}
                 placeholder="예: 6,000~9,000만원 / 협의"
-                className="w-full text-sm border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#2563EB]"
+                className="field-box"
               />
             </div>
           </div>
 
           {/* Main specializations */}
           <div>
-            <label className="block text-xs font-medium text-gray-600 mb-2">보험권역</label>
+            <label className="form-label">보험권역</label>
             <div className="flex flex-wrap gap-1.5">
               {MAIN_SPECIALIZATIONS.map(s => (
                 <button
                   key={s}
                   onClick={() => setForm(f => ({ ...f, main_specializations: toggle(f.main_specializations, s) as JobImport['main_specializations'] }))}
-                  className={`px-2.5 py-1 rounded-full text-xs font-medium transition-colors ${
+                  className={`px-2.5 py-1  text-xs font-medium transition-colors ${
                     form.main_specializations.includes(s)
-                      ? 'bg-[#2563EB] text-white'
-                      : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                      ? 'chip-active' : ''
                   }`}
                 >
                   {s}
@@ -163,16 +146,15 @@ function EditModal({
 
           {/* Detailed specialties */}
           <div>
-            <label className="block text-xs font-medium text-gray-600 mb-2">직무분야</label>
+            <label className="form-label">직무분야</label>
             <div className="flex flex-wrap gap-1.5">
               {DETAILED_SPECIALTIES.map(s => (
                 <button
                   key={s}
                   onClick={() => setForm(f => ({ ...f, detailed_specialties: toggle(f.detailed_specialties, s) as JobImport['detailed_specialties'] }))}
-                  className={`px-2.5 py-1 rounded-full text-xs font-medium transition-colors ${
+                  className={`px-2.5 py-1  text-xs font-medium transition-colors ${
                     form.detailed_specialties.includes(s)
-                      ? 'bg-[#2563EB] text-white'
-                      : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                      ? 'chip-active' : ''
                   }`}
                 >
                   {s}
@@ -183,44 +165,44 @@ function EditModal({
 
           {/* Apply URL */}
           <div>
-            <label className="block text-xs font-medium text-gray-600 mb-1">지원 링크</label>
+            <label className="form-label">지원 링크</label>
             <input
               value={form.apply_url ?? ''}
               onChange={e => setForm(f => ({ ...f, apply_url: e.target.value }))}
-              className="w-full text-sm border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#2563EB]"
+              className="field-box"
             />
           </div>
 
           {/* Description */}
           <div>
-            <label className="block text-xs font-medium text-gray-600 mb-1">공고 내용</label>
+            <label className="form-label">공고 내용</label>
             <textarea
               rows={6}
               value={form.description ?? ''}
               onChange={e => setForm(f => ({ ...f, description: e.target.value }))}
-              className="w-full text-sm border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#2563EB] resize-none"
+              className="field-box resize-none"
             />
           </div>
 
           {/* AI Notes (read-only) */}
           {job.ai_notes && (
-            <div className="bg-blue-50 border border-blue-100 rounded-lg p-3">
-              <p className="text-xs font-medium text-blue-700 mb-1">AI 분류 메모</p>
-              <p className="text-xs text-blue-600">{job.ai_notes}</p>
+            <div className="bg-bg-strong border border-line p-3">
+              <p className="text-xs font-medium text-ink mb-1">AI 분류 메모</p>
+              <p className="text-xs text-ink">{job.ai_notes}</p>
             </div>
           )}
         </div>
 
-        <div className="flex justify-end gap-3 px-6 py-4 border-t border-gray-100">
+        <div className="flex justify-end gap-3 px-6 py-4 border-t border-line">
           <button
             onClick={onClose}
-            className="px-4 py-2 text-sm text-gray-600 border border-gray-200 rounded-lg hover:bg-gray-50"
+            className="px-4 py-2 text-sm text-ink-soft border border-line hover:bg-bg-strong"
           >
             취소
           </button>
           <button
             onClick={() => onSave(form)}
-            className="px-4 py-2 text-sm font-medium bg-[#2563EB] text-white rounded-lg hover:opacity-90"
+            className="px-4 py-2 text-sm font-medium bg-ink text-bg hover:opacity-90"
           >
             수정 후 승인
           </button>
@@ -251,54 +233,54 @@ function JobRow({
 
   return (
     <>
-      <tr className="hover:bg-gray-50 border-b border-gray-100">
-        <td className="px-4 py-3">
+      <tr className="border-b border-line transition-colors hover:bg-bg-strong">
+        <td className="px-4 py-4">
           <div className="flex items-start gap-2">
             <button
               onClick={() => setExpanded(!expanded)}
-              className="mt-0.5 text-gray-300 hover:text-gray-500 shrink-0"
+              className="mt-0.5 text-muted hover:text-ink shrink-0"
             >
               <svg className={`w-4 h-4 transition-transform ${expanded ? 'rotate-90' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
               </svg>
             </button>
             <div>
-              <p className="text-sm font-medium text-gray-900 leading-tight">{job.title}</p>
-              <p className="text-xs text-gray-500 mt-0.5">{job.company}</p>
+              <p className="h4 text-[1rem]">{job.title}</p>
+              <p className="body-sm mt-1 text-[0.82rem]">{job.company}</p>
             </div>
           </div>
         </td>
-        <td className="px-4 py-3">
-          <p className="text-xs text-gray-600">{job.location || '—'}</p>
+        <td className="px-4 py-4">
+          <p className="text-xs text-ink-soft">{job.location || '—'}</p>
         </td>
-        <td className="px-4 py-3">
+        <td className="px-4 py-4">
           <div className="flex flex-wrap gap-1">
             {job.main_specializations?.slice(0, 2).map(s => (
-              <span key={s} className="px-1.5 py-0.5 rounded text-xs bg-gray-100 text-gray-600">{s}</span>
+              <span key={s} className="tag">{s}</span>
             ))}
           </div>
         </td>
-        <td className="px-4 py-3">
+        <td className="px-4 py-4">
           <div className="flex flex-wrap gap-1">
             {job.detailed_specialties?.slice(0, 2).map(s => (
-              <span key={s} className="px-1.5 py-0.5 rounded text-xs bg-blue-50 text-blue-700">{s}</span>
+              <span key={s} className="tag">{s}</span>
             ))}
           </div>
         </td>
-        <td className="px-4 py-3">
+        <td className="px-4 py-4">
           <SiteChip site={job.source_site} />
         </td>
-        <td className="px-4 py-3">
+        <td className="px-4 py-4">
           <StatusBadge status={job.status} />
         </td>
-        <td className="px-4 py-3 text-right">
+        <td className="px-4 py-4 text-right">
           {job.status === 'pending' ? (
-            <div className="flex items-center justify-end gap-1">
+            <div className="flex items-center justify-end gap-3">
               <button
                 onClick={onApprove}
                 disabled={loading}
                 title="바로 승인 (채용공고 생성)"
-                className="px-2.5 py-1 text-xs font-medium bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50"
+                className="btn btn-sm"
               >
                 승인
               </button>
@@ -306,7 +288,7 @@ function JobRow({
                 onClick={onEdit}
                 disabled={loading}
                 title="수정 후 승인"
-                className="px-2.5 py-1 text-xs font-medium bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 disabled:opacity-50"
+                className="btn btn-ghost btn-sm"
               >
                 수정
               </button>
@@ -314,7 +296,7 @@ function JobRow({
                 onClick={onReject}
                 disabled={loading}
                 title="거절"
-                className="px-2.5 py-1 text-xs font-medium text-red-500 hover:bg-red-50 rounded-lg disabled:opacity-50"
+                className="btn-text"
               >
                 거절
               </button>
@@ -325,14 +307,14 @@ function JobRow({
                 <Link
                   href={`/jobs/${job.job_id}`}
                   target="_blank"
-                  className="text-xs text-[#2563EB] hover:underline"
+                  className="label-sm link"
                 >
                   공고 보기 →
                 </Link>
               )}
               <button
                 onClick={onDelete}
-                className="text-xs text-gray-400 hover:text-red-500"
+                className="btn-text"
               >
                 삭제
               </button>
@@ -343,39 +325,39 @@ function JobRow({
 
       {/* Expanded detail row */}
       {expanded && (
-        <tr className="bg-blue-50/30">
+        <tr className="bg-bg-strong">
           <td colSpan={7} className="px-8 py-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
               <div>
-                <p className="font-medium text-gray-700 mb-1">공고 내용</p>
-                <p className="text-gray-600 whitespace-pre-wrap leading-relaxed">
+                <p className="font-medium text-ink mb-1">공고 내용</p>
+                <p className="text-ink-soft whitespace-pre-wrap leading-relaxed">
                   {job.description || '(내용 없음)'}
                 </p>
               </div>
               <div className="space-y-2">
                 {job.salary_range && (
                   <div>
-                    <span className="font-medium text-gray-700">급여: </span>
-                    <span className="text-gray-600">{job.salary_range}</span>
+                    <span className="font-medium text-ink">급여: </span>
+                    <span className="text-ink-soft">{job.salary_range}</span>
                   </div>
                 )}
                 {job.experience_level && (
                   <div>
-                    <span className="font-medium text-gray-700">경력: </span>
-                    <span className="text-gray-600">{job.experience_level}</span>
+                    <span className="font-medium text-ink">경력: </span>
+                    <span className="text-ink-soft">{job.experience_level}</span>
                   </div>
                 )}
                 {job.employment_type && (
                   <div>
-                    <span className="font-medium text-gray-700">고용형태: </span>
-                    <span className="text-gray-600">{job.employment_type}</span>
+                    <span className="font-medium text-ink">고용형태: </span>
+                    <span className="text-ink-soft">{job.employment_type}</span>
                   </div>
                 )}
                 {job.apply_url && (
                   <div>
-                    <span className="font-medium text-gray-700">지원링크: </span>
+                    <span className="font-medium text-ink">지원링크: </span>
                     <a href={job.apply_url} target="_blank" rel="noopener noreferrer"
-                      className="text-[#2563EB] hover:underline break-all"
+                      className="text-ink hover:underline break-all"
                     >
                       {job.apply_url}
                     </a>
@@ -383,18 +365,18 @@ function JobRow({
                 )}
                 {job.source_url && job.source_url !== job.apply_url && (
                   <div>
-                    <span className="font-medium text-gray-700">출처: </span>
+                    <span className="font-medium text-ink">출처: </span>
                     <a href={job.source_url} target="_blank" rel="noopener noreferrer"
-                      className="text-gray-500 hover:underline break-all"
+                      className="text-ink-soft hover:underline break-all"
                     >
                       {job.source_url}
                     </a>
                   </div>
                 )}
                 {job.ai_notes && (
-                  <div className="mt-2 p-2 bg-blue-50 rounded border border-blue-100">
-                    <p className="font-medium text-blue-700 mb-0.5">AI 메모</p>
-                    <p className="text-blue-600">{job.ai_notes}</p>
+                  <div className="mt-2 p-2 bg-bg-strong border border-line">
+                    <p className="font-medium text-ink mb-0.5">AI 메모</p>
+                    <p className="text-ink">{job.ai_notes}</p>
                   </div>
                 )}
               </div>
@@ -578,58 +560,57 @@ export default function AIImportPage() {
   const pendingCount = jobs.filter(j => j.status === 'pending').length
 
   return (
-    <div className="p-8 space-y-6 max-w-7xl mx-auto">
+    <div className="container space-y-14">
 
       {/* Header */}
-      <div className="flex items-start justify-between">
+      <header className="grid grid-cols-[1.4fr_1fr] items-end gap-x-16 gap-y-8 border-b border-line-strong pb-12 fold-980">
         <div>
-          <h1 className="text-xl font-bold text-gray-900 flex items-center gap-2">
-            <span className="text-2xl">🤖</span>
-            AI 채용공고 자동 수집
-          </h1>
-          <p className="text-sm text-gray-500 mt-1">
-            AI가 주요 채용 사이트를 검색해 계리사 채용공고를 자동 수집하고, 채용공고 목록에 자동 등록합니다.
-            중복 공고는 자동으로 걸러집니다.
+          <p className="label-sm">Admin / AI Import</p>
+          <h1 className="h2 mt-6">Auto-collect.</h1>
+          <p className="body mt-6 max-w-[52ch]">
+            AI가 주요 채용 사이트를 검색해 계리사 공고를 수집하고 목록에 등록합니다. 중복은
+            자동으로 걸러집니다.
           </p>
         </div>
 
         {/* 환경변수 안내 */}
-        <div className="text-xs text-amber-600 bg-amber-50 border border-amber-100 rounded-lg px-3 py-2 max-w-xs">
-          <strong>필요:</strong>{' '}
+        <div className="notice-quiet">
+          <span className="font-semibold text-ink">필요한 환경변수</span>
+          <br />
           <code className="font-mono">OPENROUTER_API_KEY</code>,{' '}
           <code className="font-mono">SUPABASE_SERVICE_ROLE_KEY</code>
         </div>
-      </div>
+      </header>
 
       {/* Setup notice */}
-      <div className="bg-blue-50 border border-blue-100 rounded-xl p-4 text-sm text-blue-700 space-y-2">
+      <div className="notice space-y-4">
         <div>
-          <p className="font-medium mb-1">⚙️ 최초 설정: Supabase 마이그레이션 실행</p>
-          <p className="text-xs text-blue-600">
+          <p className="font-medium mb-1">최초 설정: Supabase 마이그레이션 실행</p>
+          <p className="text-xs text-ink">
             Supabase Dashboard → SQL Editor에서{' '}
-            <code className="font-mono bg-blue-100 px-1 rounded">supabase/migrations/20260311_create_job_imports.sql</code>과{' '}
-            <code className="font-mono bg-blue-100 px-1 rounded">supabase/migrations/v6_job_imports_dedup.sql</code>을 실행해주세요.
+            <code className="font-mono bg-bg-strong px-1">supabase/migrations/20260311_create_job_imports.sql</code>과{' '}
+            <code className="font-mono bg-bg-strong px-1">supabase/migrations/v6_job_imports_dedup.sql</code>을 실행해주세요.
           </p>
         </div>
-        <div className="pt-2 border-t border-blue-100">
-          <p className="font-medium mb-1">💡 Claude Code 구독 토큰으로 돌리기</p>
-          <p className="text-xs text-blue-600">
+        <div className="pt-2 border-t border-line">
+          <p className="font-medium mb-1">Claude Code 구독 토큰으로 돌리기</p>
+          <p className="text-xs text-ink">
             이 페이지는 OpenRouter(DeepSeek)를 사용합니다. API 비용 없이 Claude Code 구독 토큰으로 수집하려면
-            로컬 터미널에서 <code className="font-mono bg-blue-100 px-1 rounded">npm run scrape</code>를 실행하세요.
+            로컬 터미널에서 <code className="font-mono bg-bg-strong px-1">npm run scrape</code>를 실행하세요.
           </p>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 xl:grid-cols-5 gap-6">
+      <div className="grid grid-cols-1 gap-12 xl:grid-cols-5 xl:gap-16">
 
         {/* ── Left: Search Config ─────────────────────────────────── */}
-        <div className="xl:col-span-2 space-y-4">
-          <div className="bg-white rounded-xl border border-gray-200 p-5">
-            <h2 className="text-sm font-semibold text-gray-900 mb-4">검색 설정</h2>
+        <div className="space-y-10 xl:col-span-2">
+          <div className="border border-line-strong p-6">
+            <h2 className="label-sm mb-6 block border-b border-line-strong pb-4">검색 설정</h2>
 
             <div className="space-y-4">
               <div>
-                <label className="block text-xs font-medium text-gray-600 mb-1">
+                <label className="form-label">
                   검색 키워드 (쉼표로 구분)
                 </label>
                 <textarea
@@ -637,25 +618,25 @@ export default function AIImportPage() {
                   value={keywords}
                   onChange={e => setKeywords(e.target.value)}
                   disabled={isSearching}
-                  className="w-full text-sm border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#2563EB] resize-none disabled:opacity-50"
+                  className="field-box resize-none disabled:opacity-50"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-medium text-gray-600 mb-1">
+                <label className="form-label">
                   검색 지역 (쉼표로 구분)
                 </label>
                 <input
                   value={locations}
                   onChange={e => setLocations(e.target.value)}
                   disabled={isSearching}
-                  className="w-full text-sm border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#2563EB] disabled:opacity-50"
+                  className="field-box disabled:opacity-50"
                 />
-                <p className="text-xs text-gray-400 mt-1">예: Korea, Hong Kong, Singapore</p>
+                <p className="text-xs text-muted mt-1">예: Korea, Hong Kong, Singapore</p>
               </div>
 
               <div>
-                <label className="block text-xs font-medium text-gray-600 mb-1">
+                <label className="form-label">
                   목표 수집 건수 (최대 50)
                 </label>
                 <input
@@ -665,23 +646,23 @@ export default function AIImportPage() {
                   value={maxJobs}
                   onChange={e => setMaxJobs(parseInt(e.target.value) || 15)}
                   disabled={isSearching}
-                  className="w-full text-sm border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#2563EB] disabled:opacity-50"
+                  className="field-box disabled:opacity-50"
                 />
               </div>
 
               {/* 자동 업로드 설정 */}
-              <div className="space-y-3 pt-1 border-t border-gray-100">
+              <div className="space-y-3 pt-1 border-t border-line">
                 <label className="flex items-start gap-2 cursor-pointer">
                   <input
                     type="checkbox"
                     checked={autoUpload}
                     onChange={e => setAutoUpload(e.target.checked)}
                     disabled={isSearching}
-                    className="mt-0.5 accent-[#2563EB] disabled:opacity-50"
+                    className="mt-0.5 accent-ink disabled:opacity-50"
                   />
                   <span>
-                    <span className="block text-xs font-medium text-gray-700">채용공고에 자동 등록</span>
-                    <span className="block text-xs text-gray-400">
+                    <span className="block text-xs font-medium text-ink">채용공고에 자동 등록</span>
+                    <span className="block text-xs text-muted">
                       끄면 검토 대기(pending)로만 저장되고 승인은 직접 해야 합니다.
                     </span>
                   </span>
@@ -693,11 +674,11 @@ export default function AIImportPage() {
                     checked={autoPublish}
                     onChange={e => setAutoPublish(e.target.checked)}
                     disabled={isSearching || !autoUpload}
-                    className="mt-0.5 accent-[#2563EB] disabled:opacity-50"
+                    className="mt-0.5 accent-ink disabled:opacity-50"
                   />
                   <span>
-                    <span className="block text-xs font-medium text-gray-700">등록과 동시에 즉시 공개</span>
-                    <span className="block text-xs text-gray-400">
+                    <span className="block text-xs font-medium text-ink">등록과 동시에 즉시 공개</span>
+                    <span className="block text-xs text-muted">
                       기본값은 비공개입니다. 켜면 검토 없이 바로 사이트에 노출됩니다.
                     </span>
                   </span>
@@ -707,7 +688,7 @@ export default function AIImportPage() {
               <button
                 onClick={startScrape}
                 disabled={isSearching}
-                className="w-full py-2.5 text-sm font-semibold bg-[#2563EB] text-white rounded-xl hover:opacity-90 disabled:opacity-50 flex items-center justify-center gap-2"
+                className="btn w-full"
               >
                 {isSearching ? (
                   <>
@@ -730,19 +711,19 @@ export default function AIImportPage() {
           </div>
 
           {/* Search Sources */}
-          <div className="bg-white rounded-xl border border-gray-200 p-5">
-            <h3 className="text-xs font-semibold text-gray-700 mb-3">검색 대상 사이트</h3>
+          <div className="border border-line-strong p-6">
+            <h3 className="label-sm mb-5 block border-b border-line-strong pb-4">검색 대상 사이트</h3>
             <div className="space-y-2">
               {[
-                { flag: '🇰🇷', sites: ['사람인', '잡코리아', 'LinkedIn KR'], priority: '우선순위 1' },
-                { flag: '🇭🇰', sites: ['LinkedIn HK', 'JobsDB HK', 'eFinancialCareers HK'], priority: '우선순위 2' },
-                { flag: '🇸🇬', sites: ['LinkedIn SG', 'JobsDB SG', 'eFinancialCareers SG'], priority: '우선순위 3' },
+                { flag: 'KR', sites: ['사람인', '잡코리아', 'LinkedIn KR'], priority: '우선순위 1' },
+                { flag: 'HK', sites: ['LinkedIn HK', 'JobsDB HK', 'eFinancialCareers HK'], priority: '우선순위 2' },
+                { flag: 'SG', sites: ['LinkedIn SG', 'JobsDB SG', 'eFinancialCareers SG'], priority: '우선순위 3' },
               ].map(row => (
                 <div key={row.priority} className="flex items-start gap-2">
-                  <span className="text-base">{row.flag}</span>
+                  <span className="num w-7 shrink-0">{row.flag}</span>
                   <div>
-                    <p className="text-xs text-gray-400">{row.priority}</p>
-                    <p className="text-xs text-gray-600">{row.sites.join(' · ')}</p>
+                    <p className="text-xs text-muted">{row.priority}</p>
+                    <p className="text-xs text-ink-soft">{row.sites.join(' · ')}</p>
                   </div>
                 </div>
               ))}
@@ -750,44 +731,44 @@ export default function AIImportPage() {
           </div>
 
           {/* AI Model info */}
-          <div className="bg-white rounded-xl border border-gray-200 p-5">
-            <h3 className="text-xs font-semibold text-gray-700 mb-2">사용 AI 모델</h3>
+          <div className="border border-line-strong p-6">
+            <h3 className="label-sm mb-4 block border-b border-line-strong pb-4">사용 AI 모델</h3>
             <div className="flex items-center gap-2">
-              <span className="w-2 h-2 rounded-full bg-[#2563EB]" />
-              <span className="text-xs text-gray-600">DeepSeek V3.2 (OpenRouter)</span>
+              <span className="h-1.5 w-1.5 bg-ink" />
+              <span className="text-xs text-ink-soft">DeepSeek V3.2 (OpenRouter)</span>
             </div>
-            <p className="text-xs text-gray-400 mt-1">
+            <p className="text-xs text-muted mt-1">
               웹 검색 + 페이지 열람 + 자동 분류<br />
               한국어/영어 지원 · 저비용 운영
             </p>
-            <div className="mt-3 pt-3 border-t border-gray-100 flex items-center gap-2">
-              <span className="w-2 h-2 rounded-full bg-gray-300" />
-              <span className="text-xs text-gray-500">로컬: Claude Sonnet 5 (구독 토큰)</span>
+            <div className="mt-3 pt-3 border-t border-line flex items-center gap-2">
+              <span className="h-1.5 w-1.5 bg-line-strong" />
+              <span className="text-xs text-ink-soft">로컬: Claude Sonnet 5 (구독 토큰)</span>
             </div>
-            <p className="text-xs text-gray-400 mt-1">
+            <p className="text-xs text-muted mt-1">
               <code className="font-mono">npm run scrape</code> 실행 시 사용
             </p>
           </div>
         </div>
 
         {/* ── Right: Log + Jobs table ─────────────────────────────── */}
-        <div className="xl:col-span-3 space-y-4">
+        <div className="space-y-10 xl:col-span-3">
 
           {/* Live log */}
           {(isSearching || logs.length > 0) && (
-            <div className="bg-[#0B1F3A] rounded-xl p-4">
+            <div className="bg-ink p-4">
               <div className="flex items-center justify-between mb-2">
-                <p className="text-xs font-medium text-white/70 uppercase tracking-wide">Live Log</p>
+                <p className="text-xs font-medium text-bg/70 uppercase tracking-wide">Live Log</p>
                 {isSearching && (
-                  <span className="flex items-center gap-1.5 text-xs text-green-400">
-                    <span className="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse" />
+                  <span className="flex items-center gap-1.5 text-xs text-bg">
+                    <span className="w-1.5 h-1.5 bg-bg" />
                     검색 중
                   </span>
                 )}
               </div>
               <div className="h-40 overflow-y-auto font-mono text-xs space-y-1">
                 {logs.map((log, i) => (
-                  <p key={i} className="text-white/80 leading-relaxed">{log}</p>
+                  <p key={i} className="text-bg/80 leading-relaxed">{log}</p>
                 ))}
                 <div ref={logEndRef} />
               </div>
@@ -795,21 +776,21 @@ export default function AIImportPage() {
           )}
 
           {/* Tab bar */}
-          <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
-            <div className="flex border-b border-gray-100">
+          <div>
+            <div className="flex items-center border-b border-line-strong">
               {(['pending', 'approved', 'rejected'] as const).map(s => (
                 <button
                   key={s}
                   onClick={() => setTabStatus(s)}
-                  className={`flex-1 py-3 text-xs font-medium transition-colors ${
+                  className={`flex-1 border-b-2 py-4 text-[0.68rem] font-semibold uppercase tracking-[0.16em] transition-colors ${
                     tabStatus === s
-                      ? 'bg-white text-[#2563EB] border-b-2 border-[#2563EB]'
-                      : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'
+                      ? 'border-ink text-ink'
+                      : 'border-transparent text-muted hover:text-ink'
                   }`}
                 >
                   {s === 'pending' ? '검토 대기' : s === 'approved' ? '승인됨' : '거절됨'}
                   {s === 'pending' && pendingCount > 0 && (
-                    <span className="ml-1.5 inline-flex items-center justify-center w-4 h-4 text-xs bg-[#2563EB] text-white rounded-full">
+                    <span className="ml-2 inline-flex h-4 min-w-4 items-center justify-center bg-ink px-1 text-[0.62rem] text-bg">
                       {pendingCount}
                     </span>
                   )}
@@ -817,7 +798,7 @@ export default function AIImportPage() {
               ))}
               <button
                 onClick={() => loadJobs(tabStatus)}
-                className="px-4 text-gray-400 hover:text-gray-600"
+                className="px-4 py-4 text-muted transition-colors hover:text-ink"
                 title="새로고침"
               >
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -828,16 +809,16 @@ export default function AIImportPage() {
 
             {/* Jobs table */}
             {loading ? (
-              <div className="flex items-center justify-center py-16 text-sm text-gray-400">
-                <svg className="animate-spin w-5 h-5 mr-2 text-[#2563EB]" fill="none" viewBox="0 0 24 24">
+              <div className="flex items-center justify-center py-16 text-sm text-muted">
+                <svg className="animate-spin w-5 h-5 mr-2 text-ink" fill="none" viewBox="0 0 24 24">
                   <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
                   <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
                 </svg>
                 로딩 중...
               </div>
             ) : jobs.length === 0 ? (
-              <div className="flex flex-col items-center justify-center py-16 text-gray-400">
-                <svg className="w-10 h-10 mb-3 text-gray-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <div className="flex flex-col items-center justify-center py-16 text-muted">
+                <svg className="w-10 h-10 mb-3 text-muted" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
                 </svg>
                 <p className="text-sm">
@@ -849,10 +830,10 @@ export default function AIImportPage() {
             ) : (
               <div className="overflow-x-auto">
                 <table className="w-full text-left">
-                  <thead className="bg-gray-50">
-                    <tr>
+                  <thead>
+                    <tr className="table-head">
                       {['직책 / 회사', '지역', '보험권역', '직무분야', '출처', '상태', '액션'].map(h => (
-                        <th key={h} className="px-4 py-2.5 text-xs text-gray-500 font-medium">{h}</th>
+                        <th key={h} className="px-4 py-4 font-semibold">{h}</th>
                       ))}
                     </tr>
                   </thead>

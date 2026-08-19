@@ -62,40 +62,43 @@ export default function JobFilters({
   const hasFilters = !!(current.q || current.main || current.detail || current.exp || current.type)
 
   return (
-    <div className="space-y-3 mb-6">
+    <div className="mb-12 mt-10">
       {/* Keyword search */}
       <form
         onSubmit={e => {
           e.preventDefault()
           navigate({ q: keyword.trim() || null })
         }}
-        className="flex gap-2"
+        className="flex items-end gap-6"
       >
-        <input
-          type="text"
-          value={keyword}
-          onChange={e => setKeyword(e.target.value)}
-          placeholder="직무명, 회사명으로 검색"
-          className="flex-1 px-4 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#2563EB] focus:border-transparent"
-        />
-        <button
-          type="submit"
-          className="px-5 py-2.5 bg-[#2563EB] text-white text-sm font-medium rounded-lg hover:opacity-90 transition-opacity"
-        >
-          검색
+        <div className="flex-1">
+          <label htmlFor="job-q" className="form-label">
+            Search
+          </label>
+          <input
+            id="job-q"
+            type="text"
+            value={keyword}
+            onChange={e => setKeyword(e.target.value)}
+            placeholder="직무명, 회사명"
+            className="field"
+          />
+        </div>
+        <button type="submit" className="btn">
+          Search
         </button>
       </form>
 
       {/* Inline chip filters */}
-      <div className="bg-white border border-gray-200 rounded-xl p-4 space-y-3">
+      <div className="mt-10 space-y-6 border-t border-line pt-8">
         <FilterRow
-          label="분야"
+          label="Sector"
           options={mainOptions}
           selected={selectedMain}
           onToggle={v => toggleValue('main', selectedMain, v)}
         />
         <FilterRow
-          label="세부전문"
+          label="Specialty"
           options={detailExpanded ? detailOptions : detailOptions.slice(0, DETAIL_PREVIEW_COUNT)}
           selected={selectedDetail}
           onToggle={v => toggleValue('detail', selectedDetail, v)}
@@ -104,36 +107,36 @@ export default function JobFilters({
               <button
                 type="button"
                 onClick={() => setDetailExpanded(v => !v)}
-                className="px-2.5 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-400 hover:bg-gray-200 transition-colors whitespace-nowrap"
+                className="chip"
               >
-                {detailExpanded ? '접기 ▲' : `+${detailOptions.length - DETAIL_PREVIEW_COUNT}개 더보기 ▼`}
+                {detailExpanded ? '접기' : `+${detailOptions.length - DETAIL_PREVIEW_COUNT} more`}
               </button>
             ) : undefined
           }
         />
         <FilterRow
-          label="경력"
+          label="Experience"
           options={[...EXPERIENCE_LEVELS]}
           selected={selectedExp}
           onToggle={v => toggleValue('exp', selectedExp, v)}
         />
         <FilterRow
-          label="고용형태"
+          label="Type"
           options={[...EMPLOYMENT_TYPES]}
           selected={selectedType}
           onToggle={v => toggleValue('type', selectedType, v)}
         />
         {hasFilters && (
-          <div className="pt-2 border-t border-gray-100">
+          <div className="border-t border-line pt-6">
             <button
               type="button"
               onClick={() => {
                 setKeyword('')
                 startTransition(() => router.push(pathname))
               }}
-              className="text-xs text-gray-400 hover:text-gray-600 transition-colors"
+              className="btn-text"
             >
-              필터 초기화
+              Reset filters
             </button>
           </div>
         )}
@@ -156,9 +159,9 @@ function FilterRow({
   expandButton?: React.ReactNode
 }) {
   return (
-    <div className="flex items-start gap-3">
-      <span className="text-xs font-semibold text-gray-500 w-14 flex-shrink-0 pt-1.5">{label}</span>
-      <div className="flex flex-wrap gap-1.5">
+    <div className="grid grid-cols-[7rem_1fr] items-start gap-x-6 gap-y-3 fold-520">
+      <span className="label-sm pt-2">{label}</span>
+      <div className="flex flex-wrap gap-2">
         {options.map(o => {
           const active = selected.includes(o)
           return (
@@ -166,11 +169,7 @@ function FilterRow({
               key={o}
               type="button"
               onClick={() => onToggle(o)}
-              className={`px-2.5 py-1 rounded-full text-xs font-medium transition-colors ${
-                active
-                  ? 'bg-[#2563EB] text-white'
-                  : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-              }`}
+              className={`chip${active ? ' chip-active' : ''}`}
             >
               {o}
             </button>

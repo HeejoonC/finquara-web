@@ -1,26 +1,654 @@
 @import "tailwindcss";
 
+/* ============================================================
+   Finquara — Design System
+   Swiss International / Editorial
+   색상은 아래 6색 + 라인 2종이 전부다. 액센트 컬러는 없다.
+   강조는 오직 '검정 블록 + 오프화이트 글자'로만 처리한다.
+   ============================================================ */
+
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --bg: #f6f4f0;
+  --bg-strong: #efebe5;
+  --ink: #111111;
+  --ink-soft: #58524a;
+  --muted: #6d675f;
+  --line: rgba(17, 17, 17, 0.1);
+  --line-strong: rgba(17, 17, 17, 0.18);
+  --shadow: 0 30px 60px rgba(17, 17, 17, 0.08);
+  --max-width: 1260px;
+
+  --ease: cubic-bezier(0.16, 1, 0.3, 1);
 }
 
+/* Tailwind 유틸리티에 토큰 노출 — bg-bg / text-ink / border-line 등 */
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-bg: var(--bg);
+  --color-bg-strong: var(--bg-strong);
+  --color-ink: var(--ink);
+  --color-ink-soft: var(--ink-soft);
+  --color-muted: var(--muted);
+  --color-line: var(--line);
+  --color-line-strong: var(--line-strong);
+  --font-sans: var(--font-inter), var(--font-noto-kr), "Inter", "Noto Sans KR", sans-serif;
+  --shadow-editorial: var(--shadow);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+/* ── Base ─────────────────────────────────────────────────── */
+
+* {
+  border-color: var(--line);
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+  /* sticky 헤더(72px) 높이만큼 앵커 스크롤 여백을 준다 */
+  scroll-padding-top: 92px;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--font-inter), var(--font-noto-kr), "Inter", "Noto Sans KR", sans-serif;
+  font-size: 1.08rem;
+  line-height: 1.65;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+::selection {
+  background: var(--ink);
+  color: var(--bg);
+}
+
+:focus-visible {
+  outline: 1px solid var(--ink);
+  outline-offset: 3px;
+}
+
+/* ── Layout ───────────────────────────────────────────────── */
+
+.container {
+  width: min(var(--max-width), calc(100% - 48px));
+  margin: 0 auto;
+}
+
+.container-narrow {
+  width: min(880px, calc(100% - 48px));
+  margin: 0 auto;
+}
+
+.section {
+  padding: 92px 0;
+}
+
+.section-tight {
+  padding: 64px 0;
+}
+
+@media (max-width: 720px) {
+  .container,
+  .container-narrow {
+    width: calc(100% - 40px);
+  }
+  .section {
+    padding: 72px 0;
+  }
+  .section-tight {
+    padding: 48px 0;
+  }
+}
+
+.rule {
+  border: 0;
+  border-top: 1px solid var(--line);
+  margin: 0;
+}
+
+.rule-strong {
+  border: 0;
+  border-top: 1px solid var(--line-strong);
+  margin: 0;
+}
+
+/* ── Typography ───────────────────────────────────────────── */
+
+.display {
+  font-size: clamp(4.1rem, 8vw, 9rem);
+  line-height: 0.95;
+  letter-spacing: -0.07em;
+  font-weight: 800;
+  color: var(--ink);
+  margin: 0;
+}
+
+.h2 {
+  font-size: clamp(2.5rem, 4vw, 4.8rem);
+  line-height: 1;
+  letter-spacing: -0.07em;
+  font-weight: 700;
+  color: var(--ink);
+  margin: 0;
+}
+
+.h3 {
+  font-size: clamp(1.7rem, 2.8vw, 3rem);
+  line-height: 1.08;
+  letter-spacing: -0.05em;
+  font-weight: 600;
+  color: var(--ink);
+  margin: 0;
+}
+
+.h4 {
+  font-size: clamp(1.15rem, 1.4vw, 1.4rem);
+  line-height: 1.25;
+  letter-spacing: -0.03em;
+  font-weight: 600;
+  color: var(--ink);
+  margin: 0;
+}
+
+.body {
+  font-size: 1.08rem;
+  line-height: 1.65;
+  color: var(--ink-soft);
+}
+
+.body-sm {
+  font-size: 0.94rem;
+  line-height: 1.6;
+  color: var(--ink-soft);
+}
+
+/* 라벨·네비·번호 — 헤드라인과 정반대로 자간을 극단적으로 넓힌다 */
+.label {
+  font-size: 0.72rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  font-weight: 600;
+  color: var(--muted);
+  line-height: 1.4;
+}
+
+.label-sm {
+  font-size: 0.68rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  font-weight: 600;
+  color: var(--muted);
+  line-height: 1.4;
+}
+
+.label-lg {
+  font-size: 0.8rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  font-weight: 600;
+  color: var(--muted);
+  line-height: 1.4;
+}
+
+.num {
+  font-size: 0.72rem;
+  letter-spacing: 0.18em;
+  font-weight: 600;
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.stat {
+  font-size: clamp(2.6rem, 4.5vw, 4.4rem);
+  line-height: 0.95;
+  letter-spacing: -0.06em;
+  font-weight: 700;
+  color: var(--ink);
+  font-variant-numeric: tabular-nums;
+}
+
+/* ── Interaction 1: 링크 밑줄 ─────────────────────────────── */
+
+.link {
+  position: relative;
+  display: inline-block;
+  color: var(--ink);
+  text-decoration: none;
+}
+
+.link::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  bottom: -2px;
+  width: 100%;
+  height: 1px;
+  background: currentColor;
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 0.25s ease;
+}
+
+.link:hover::after,
+.link:focus-visible::after {
+  transform: scaleX(1);
+}
+
+.link-soft {
+  color: var(--ink-soft);
+}
+
+/* 상시 밑줄 */
+.link-static::after {
+  transform: scaleX(1);
+  background: var(--line-strong);
+}
+
+/* ── Interaction 2: 리스트 항목 호버 ──────────────────────── */
+
+.row {
+  transition: opacity 0.4s var(--ease);
+}
+
+.row:hover {
+  opacity: 0.62;
+}
+
+/* ── Header ───────────────────────────────────────────────── */
+
+.site-header {
+  position: sticky;
+  top: 0;
+  z-index: 60;
+  background: rgba(246, 244, 240, 0.72);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+  border-bottom: 1px solid var(--line);
+}
+
+/* ── Surfaces ─────────────────────────────────────────────── */
+
+.panel {
+  background: var(--bg);
+  border: 1px solid var(--line);
+}
+
+.panel-strong {
+  background: var(--bg-strong);
+  border: 1px solid var(--line);
+}
+
+.panel-float {
+  background: var(--bg);
+  border: 1px solid var(--line);
+  box-shadow: var(--shadow);
+}
+
+/* 유일한 강조 수단 */
+.ink-block {
+  background: var(--ink);
+  color: var(--bg);
+}
+
+.ink-block .body,
+.ink-block .body-sm {
+  color: rgba(246, 244, 240, 0.72);
+}
+
+.ink-block .label,
+.ink-block .label-sm,
+.ink-block .label-lg,
+.ink-block .num {
+  color: rgba(246, 244, 240, 0.55);
+}
+
+.ink-block .h2,
+.ink-block .h3,
+.ink-block .h4,
+.ink-block .display,
+.ink-block .stat {
+  color: var(--bg);
+}
+
+/* ── Buttons ──────────────────────────────────────────────── */
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.6em;
+  padding: 0.95rem 1.6rem;
+  background: var(--ink);
+  color: var(--bg);
+  border: 1px solid var(--ink);
+  border-radius: 0;
+  font-size: 0.74rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  font-weight: 600;
+  line-height: 1;
+  cursor: pointer;
+  transition: opacity 0.25s ease;
+}
+
+.btn:hover:not(:disabled) {
+  opacity: 0.72;
+}
+
+.btn:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+.btn-ghost {
+  background: transparent;
+  color: var(--ink);
+  border: 1px solid var(--line-strong);
+}
+
+.btn-ghost:hover:not(:disabled) {
+  opacity: 1;
+  background: var(--ink);
+  color: var(--bg);
+  border-color: var(--ink);
+}
+
+.btn-sm {
+  padding: 0.62rem 1.05rem;
+  font-size: 0.66rem;
+  letter-spacing: 0.14em;
+}
+
+.btn-text {
+  background: transparent;
+  border: 0;
+  padding: 0;
+  color: var(--muted);
+  letter-spacing: 0.14em;
+  font-size: 0.68rem;
+  text-transform: uppercase;
+  font-weight: 600;
+  cursor: pointer;
+  transition: color 0.25s ease;
+}
+
+.btn-text:hover:not(:disabled) {
+  color: var(--ink);
+}
+
+/* ── Form ─────────────────────────────────────────────────── */
+
+.field {
+  width: 100%;
+  padding: 0.85rem 0;
+  background: transparent;
+  border: 0;
+  border-bottom: 1px solid var(--line-strong);
+  border-radius: 0;
+  color: var(--ink);
+  font-family: inherit;
+  font-size: 1rem;
+  line-height: 1.5;
+  transition: border-color 0.25s ease;
+}
+
+.field::placeholder {
+  color: var(--muted);
+  opacity: 0.72;
+}
+
+.field:focus {
+  outline: none;
+  border-bottom-color: var(--ink);
+}
+
+.field:disabled {
+  opacity: 0.45;
+}
+
+/* 박스형 입력 — 밀도 높은 관리자/필터 화면용 */
+.field-box {
+  width: 100%;
+  padding: 0.72rem 0.9rem;
+  background: var(--bg);
+  border: 1px solid var(--line-strong);
+  border-radius: 0;
+  color: var(--ink);
+  font-family: inherit;
+  font-size: 0.94rem;
+  line-height: 1.5;
+  transition: border-color 0.25s ease;
+}
+
+.field-box::placeholder {
+  color: var(--muted);
+  opacity: 0.72;
+}
+
+.field-box:focus {
+  outline: none;
+  border-color: var(--ink);
+}
+
+select.field,
+select.field-box {
+  appearance: none;
+  background-image: linear-gradient(45deg, transparent 50%, var(--ink) 50%),
+    linear-gradient(135deg, var(--ink) 50%, transparent 50%);
+  background-position: calc(100% - 14px) center, calc(100% - 9px) center;
+  background-size: 5px 5px, 5px 5px;
+  background-repeat: no-repeat;
+  padding-right: 2rem;
+}
+
+textarea.field,
+textarea.field-box {
+  resize: vertical;
+}
+
+.form-label {
+  display: block;
+  font-size: 0.68rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  font-weight: 600;
+  color: var(--muted);
+  margin-bottom: 0.55rem;
+}
+
+/* ── Chips ────────────────────────────────────────────────── */
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.4rem 0.78rem;
+  border: 1px solid var(--line-strong);
+  border-radius: 0;
+  background: transparent;
+  color: var(--ink-soft);
+  font-size: 0.76rem;
+  line-height: 1.3;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: opacity 0.25s ease, background-color 0.25s ease, color 0.25s ease;
+}
+
+.chip:hover {
+  opacity: 0.62;
+}
+
+.chip-active {
+  background: var(--ink);
+  border-color: var(--ink);
+  color: var(--bg);
+}
+
+.chip-active:hover {
+  opacity: 0.72;
+}
+
+/* 정보 표시용 (클릭 불가) */
+.tag {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.22rem 0.5rem;
+  border: 1px solid var(--line);
+  border-radius: 0;
+  color: var(--muted);
+  font-size: 0.68rem;
+  letter-spacing: 0.08em;
+  line-height: 1.4;
+  white-space: nowrap;
+}
+
+.tag-solid {
+  background: var(--ink);
+  border-color: var(--ink);
+  color: var(--bg);
+}
+
+/* ── Notice — 액센트 컬러 대신 검정 괘선 / 블록으로 처리 ──── */
+
+.notice {
+  border-left: 2px solid var(--ink);
+  padding: 0.85rem 0 0.85rem 1rem;
+  font-size: 0.9rem;
+  line-height: 1.55;
+  color: var(--ink);
+  background: var(--bg-strong);
+}
+
+.notice-quiet {
+  border-left: 2px solid var(--line-strong);
+  padding: 0.85rem 0 0.85rem 1rem;
+  font-size: 0.9rem;
+  line-height: 1.55;
+  color: var(--ink-soft);
+}
+
+/* ── Table ────────────────────────────────────────────────── */
+
+.table-head {
+  font-size: 0.66rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  font-weight: 600;
+  color: var(--muted);
+  border-bottom: 1px solid var(--line-strong);
+}
+
+/* ── Prose (리치텍스트 본문) ──────────────────────────────── */
+
+.prose-editorial {
+  font-size: 1.02rem;
+  line-height: 1.75;
+  color: var(--ink-soft);
+}
+
+.prose-editorial h1,
+.prose-editorial h2,
+.prose-editorial h3 {
+  color: var(--ink);
+  letter-spacing: -0.03em;
+  font-weight: 600;
+  margin: 2em 0 0.6em;
+  line-height: 1.2;
+}
+
+.prose-editorial h1 {
+  font-size: 1.6rem;
+}
+.prose-editorial h2 {
+  font-size: 1.35rem;
+}
+.prose-editorial h3 {
+  font-size: 1.12rem;
+}
+
+.prose-editorial p {
+  margin: 0 0 1.1em;
+}
+
+.prose-editorial ul,
+.prose-editorial ol {
+  margin: 0 0 1.1em;
+  padding-left: 1.15em;
+}
+
+.prose-editorial ul {
+  list-style: disc;
+}
+.prose-editorial ol {
+  list-style: decimal;
+}
+.prose-editorial li {
+  margin-bottom: 0.35em;
+}
+
+.prose-editorial strong {
+  color: var(--ink);
+  font-weight: 600;
+}
+
+.prose-editorial a {
+  color: var(--ink);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.prose-editorial img {
+  max-width: 100%;
+  height: auto;
+  margin: 1.5em 0;
+}
+
+.prose-editorial hr {
+  border: 0;
+  border-top: 1px solid var(--line);
+  margin: 2em 0;
+}
+
+/* ── Footer ───────────────────────────────────────────────── */
+
+.site-footer {
+  background: #111111;
+  color: rgba(255, 255, 255, 0.82);
+}
+
+.site-footer a {
+  color: rgba(255, 255, 255, 0.82);
+}
+
+/* ── Responsive: 다단 그리드는 전부 1fr 단일 컬럼으로 접는다 ── */
+
+@media (max-width: 980px) {
+  .fold-980 {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+@media (max-width: 720px) {
+  .fold-720 {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+@media (max-width: 520px) {
+  .fold-520 {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+/* 스크롤바 — 배경 톤에 맞춰 죽인다 */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+::-webkit-scrollbar-track {
+  background: var(--bg-strong);
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(17, 17, 17, 0.18);
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(17, 17, 17, 0.3);
 }

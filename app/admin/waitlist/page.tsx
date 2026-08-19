@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import type { Waitlist } from '@/types/database'
+import { PageHeader } from '@/components/ui/Form'
 
 export default function AdminWaitlistPage() {
   const supabase = createClient()
@@ -21,39 +22,45 @@ export default function AdminWaitlistPage() {
     load()
   }, [])
 
-  if (loading) return <div className="p-8 text-gray-500">불러오는 중...</div>
+  if (loading)
+    return (
+      <div className="container">
+        <p className="label-sm">Loading…</p>
+      </div>
+    )
 
   return (
-    <div className="p-8">
-      <h1 className="text-2xl font-bold text-[#0B1F3A] mb-1">대기목록</h1>
-      <p className="text-gray-500 text-sm mb-8">총 {list.length}명 등록</p>
+    <div className="container">
+      <PageHeader
+        index="Admin / Waitlist"
+        title="Waitlist."
+        description={`총 ${list.length}명 등록.`}
+      />
 
-      <div className="bg-white border border-gray-200 rounded-xl overflow-hidden">
-        <table className="w-full text-sm">
-          <thead className="bg-gray-50 border-b border-gray-200">
-            <tr>
-              <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase">#</th>
-              <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase">이메일</th>
-              <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase">메모</th>
-              <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase">등록일</th>
+      <div className="mt-14 overflow-x-auto">
+        <table className="w-full min-w-[640px] text-left">
+          <thead>
+            <tr className="table-head">
+              <th className="w-16 py-4 font-semibold">#</th>
+              <th className="py-4 font-semibold">Email</th>
+              <th className="py-4 font-semibold">Note</th>
+              <th className="py-4 text-right font-semibold">Date</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-gray-100">
+          <tbody>
             {list.map((item, i) => (
-              <tr key={item.id} className="hover:bg-gray-50">
-                <td className="px-6 py-4 text-gray-400">{i + 1}</td>
-                <td className="px-6 py-4 font-medium text-gray-800">{item.email}</td>
-                <td className="px-6 py-4 text-gray-500">{item.note || '—'}</td>
-                <td className="px-6 py-4 text-gray-500">
+              <tr key={item.id} className="row border-b border-line">
+                <td className="num py-5">{String(i + 1).padStart(2, '0')}</td>
+                <td className="py-5 text-[0.98rem] text-ink">{item.email}</td>
+                <td className="body-sm py-5">{item.note || '—'}</td>
+                <td className="num py-5 text-right">
                   {new Date(item.created_at).toLocaleDateString('ko-KR')}
                 </td>
               </tr>
             ))}
           </tbody>
         </table>
-        {list.length === 0 && (
-          <div className="text-center py-12 text-gray-400">등록된 대기자가 없습니다.</div>
-        )}
+        {list.length === 0 && <p className="body border-t border-line py-16">등록된 대기자가 없습니다.</p>}
       </div>
     </div>
   )

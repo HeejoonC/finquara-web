@@ -10,19 +10,12 @@ export default function JobOwnerActions({ jobId }: { jobId: string }) {
   }
 
   return (
-    <div className="flex gap-2">
-      <Link
-        href={`/post/edit/${jobId}`}
-        className="px-3 py-1.5 text-xs border border-gray-300 text-gray-600 rounded-lg hover:border-gray-400 transition-colors"
-      >
-        수정
+    <div className="flex items-center gap-6">
+      <Link href={`/post/edit/${jobId}`} className="label link">
+        Edit
       </Link>
-      <button
-        type="button"
-        onClick={handleDelete}
-        className="px-3 py-1.5 text-xs border border-red-200 text-red-500 rounded-lg hover:bg-red-50 transition-colors"
-      >
-        삭제
+      <button type="button" onClick={handleDelete} className="btn-text">
+        Delete
       </button>
     </div>
   )

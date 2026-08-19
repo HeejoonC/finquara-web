@@ -1,9 +1,10 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, Suspense } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
+import AuthShell from '@/components/auth/AuthShell'
 
 function ResetPasswordForm() {
   const router = useRouter()
@@ -73,73 +74,74 @@ function ResetPasswordForm() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
-      <div className="w-full max-w-md">
-        <div className="text-center mb-8">
-          <Link href="/" className="text-2xl font-bold text-[#0B1F3A]">Finquara</Link>
-          <p className="mt-2 text-gray-500 text-sm">새 비밀번호 설정</p>
+    <AuthShell
+      index="02 / Recover"
+      heading={
+        <>
+          Set a new
+          <br />
+          password.
+        </>
+      }
+      statement="새 비밀번호를 입력하면 즉시 적용되고 로그인 상태로 이동합니다."
+    >
+      {error && (
+        <div className="notice mb-8">
+          {error}
+          <div className="mt-3">
+            <Link href="/auth/forgot-password" className="label-sm link">
+              비밀번호 찾기로 돌아가기
+            </Link>
+          </div>
         </div>
+      )}
 
-        <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-8">
-          {error && (
-            <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg text-red-600 text-sm">
-              {error}
-              <div className="mt-2">
-                <Link href="/auth/forgot-password" className="underline">
-                  비밀번호 찾기로 돌아가기
-                </Link>
-              </div>
-            </div>
-          )}
+      {ready && (
+        <form onSubmit={handleSubmit} className="space-y-8">
+          <div>
+            <label htmlFor="rp-pw" className="form-label">
+              새 비밀번호
+            </label>
+            <input
+              id="rp-pw"
+              type="password"
+              value={password}
+              onChange={e => setPassword(e.target.value)}
+              required
+              minLength={6}
+              className="field"
+              placeholder="6자 이상 입력"
+            />
+          </div>
 
-          {ready && (
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">새 비밀번호</label>
-                <input
-                  type="password"
-                  value={password}
-                  onChange={e => setPassword(e.target.value)}
-                  required
-                  minLength={6}
-                  className="w-full px-4 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#2563EB] focus:border-transparent"
-                  placeholder="6자 이상 입력"
-                />
-              </div>
+          <div>
+            <label htmlFor="rp-pw2" className="form-label">
+              비밀번호 확인
+            </label>
+            <input
+              id="rp-pw2"
+              type="password"
+              value={confirm}
+              onChange={e => setConfirm(e.target.value)}
+              required
+              minLength={6}
+              className="field"
+              placeholder="비밀번호 재입력"
+            />
+          </div>
 
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">비밀번호 확인</label>
-                <input
-                  type="password"
-                  value={confirm}
-                  onChange={e => setConfirm(e.target.value)}
-                  required
-                  minLength={6}
-                  className="w-full px-4 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#2563EB] focus:border-transparent"
-                  placeholder="비밀번호 재입력"
-                />
-              </div>
+          <div className="pt-2">
+            <button type="submit" disabled={loading} className="btn">
+              {loading ? '변경 중' : '비밀번호 변경'}
+            </button>
+          </div>
+        </form>
+      )}
 
-              <button
-                type="submit"
-                disabled={loading}
-                className="w-full py-2.5 bg-[#2563EB] text-white rounded-lg text-sm font-medium hover:opacity-90 disabled:opacity-50 transition-opacity"
-              >
-                {loading ? '변경 중...' : '비밀번호 변경'}
-              </button>
-            </form>
-          )}
-
-          {!ready && !error && (
-            <p className="text-center text-sm text-gray-500">링크 확인 중...</p>
-          )}
-        </div>
-      </div>
-    </div>
+      {!ready && !error && <p className="label-sm">Verifying link…</p>}
+    </AuthShell>
   )
 }
-
-import { Suspense } from 'react'
 
 export default function ResetPasswordPage() {
   return (

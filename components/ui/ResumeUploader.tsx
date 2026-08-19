@@ -90,30 +90,27 @@ export default function ResumeUploader({
       />
 
       {currentFileName ? (
-        <div className="flex items-center justify-between p-4 bg-blue-50 border border-blue-200 rounded-lg">
-          <div className="flex items-center gap-3 min-w-0">
-            <span className="text-2xl">📄</span>
-            <div className="min-w-0">
-              <p className="text-sm font-medium text-gray-800 truncate">{currentFileName}</p>
-              <p className="text-xs text-gray-500">업로드 완료</p>
-            </div>
+        <div className="flex items-center justify-between gap-6 border border-line-strong px-5 py-4">
+          <div className="min-w-0">
+            <p className="label-sm">Uploaded</p>
+            <p className="mt-1.5 truncate text-[0.98rem] text-ink">{currentFileName}</p>
           </div>
-          <div className="flex items-center gap-3 ml-4 shrink-0">
+          <div className="ml-4 flex shrink-0 items-center gap-5">
             <button
               type="button"
               onClick={() => inputRef.current?.click()}
               disabled={uploading}
-              className="text-xs text-[#2563EB] hover:underline disabled:opacity-50"
+              className="btn-text"
             >
-              교체
+              Replace
             </button>
             <button
               type="button"
               onClick={handleRemove}
               disabled={uploading}
-              className="text-xs text-red-500 hover:underline disabled:opacity-50"
+              className="btn-text"
             >
-              삭제
+              Remove
             </button>
           </div>
         </div>
@@ -122,17 +119,15 @@ export default function ResumeUploader({
           type="button"
           onClick={() => inputRef.current?.click()}
           disabled={uploading}
-          className="w-full p-6 border-2 border-dashed border-gray-300 rounded-lg text-center hover:border-[#2563EB] hover:bg-blue-50 transition-colors disabled:opacity-50"
+          className="w-full border border-dashed border-line-strong px-6 py-10 text-left transition-colors hover:border-ink disabled:opacity-50"
         >
-          <div className="text-3xl mb-2">📎</div>
-          <p className="text-sm font-medium text-gray-700">
-            {uploading ? '업로드 중...' : '이력서 파일 업로드'}
-          </p>
-          <p className="text-xs text-gray-500 mt-1">PDF, DOC, DOCX · 최대 10MB</p>
+          <p className="label-sm">Resume</p>
+          <p className="h4 mt-3">{uploading ? '업로드 중' : '이력서 파일 업로드'}</p>
+          <p className="body-sm mt-2 text-[0.85rem]">PDF, DOC, DOCX · 최대 10MB</p>
         </button>
       )}
 
-      {error && <p className="text-xs text-red-500">{error}</p>}
+      {error && <p className="notice-quiet mt-4">{error}</p>}
     </div>
   )
 }

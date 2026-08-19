@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
+import AuthShell, { AuthError } from '@/components/auth/AuthShell'
 
 export default function ForgotPasswordPage() {
   const [email, setEmail] = useState('')
@@ -31,72 +32,61 @@ export default function ForgotPasswordPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
-      <div className="w-full max-w-md">
-        <div className="text-center mb-8">
-          <Link href="/" className="text-2xl font-bold text-[#0B1F3A]">Finquara</Link>
-          <p className="mt-2 text-gray-500 text-sm">비밀번호 찾기</p>
+    <AuthShell
+      index="01 / Recover"
+      heading={
+        <>
+          Reset your
+          <br />
+          password.
+        </>
+      }
+      statement="가입한 이메일 주소로 비밀번호 재설정 링크를 보내드립니다."
+    >
+      {sent ? (
+        <div>
+          <p className="label-sm">Sent</p>
+          <p className="h3 mt-5">이메일을 전송했습니다.</p>
+          <p className="body mt-6 max-w-[42ch]">
+            {email} 주소로 비밀번호 재설정 링크를 보냈습니다. 메일함을 확인해 주세요.
+          </p>
+          <p className="mt-10">
+            <Link href="/auth/login" className="label link">
+              ← 로그인으로 돌아가기
+            </Link>
+          </p>
         </div>
+      ) : (
+        <>
+          <AuthError message={error} />
 
-        <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-8">
-          {sent ? (
-            <div className="text-center py-4">
-              <div className="text-4xl mb-4">📧</div>
-              <p className="text-gray-700 font-medium">이메일을 전송했습니다</p>
-              <p className="text-gray-500 text-sm mt-2">
-                {email}로 비밀번호 재설정 링크를 보냈습니다.<br />
-                이메일을 확인해 주세요.
-              </p>
-              <Link
-                href="/auth/login"
-                className="mt-6 inline-block text-sm text-[#2563EB] hover:underline"
-              >
-                로그인으로 돌아가기
+          <form onSubmit={handleSubmit} className="space-y-8">
+            <div>
+              <label htmlFor="fp-email" className="form-label">
+                이메일
+              </label>
+              <input
+                id="fp-email"
+                type="email"
+                value={email}
+                onChange={e => setEmail(e.target.value)}
+                required
+                className="field"
+                placeholder="example@email.com"
+              />
+            </div>
+
+            <div className="flex items-center justify-between gap-6 pt-2">
+              <button type="submit" disabled={loading} className="btn">
+                {loading ? '전송 중' : '재설정 링크 보내기'}
+              </button>
+              <Link href="/auth/login" className="label-sm link">
+                로그인으로
               </Link>
             </div>
-          ) : (
-            <>
-              <p className="text-sm text-gray-600 mb-6">
-                가입한 이메일 주소를 입력하시면 비밀번호 재설정 링크를 보내드립니다.
-              </p>
-
-              {error && (
-                <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg text-red-600 text-sm">
-                  {error}
-                </div>
-              )}
-
-              <form onSubmit={handleSubmit} className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">이메일</label>
-                  <input
-                    type="email"
-                    value={email}
-                    onChange={e => setEmail(e.target.value)}
-                    required
-                    className="w-full px-4 py-2.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-[#2563EB] focus:border-transparent"
-                    placeholder="example@email.com"
-                  />
-                </div>
-
-                <button
-                  type="submit"
-                  disabled={loading}
-                  className="w-full py-2.5 bg-[#2563EB] text-white rounded-lg text-sm font-medium hover:opacity-90 disabled:opacity-50 transition-opacity"
-                >
-                  {loading ? '전송 중...' : '재설정 링크 보내기'}
-                </button>
-              </form>
-
-              <p className="mt-6 text-center text-sm text-gray-500">
-                <Link href="/auth/login" className="text-[#2563EB] hover:underline">
-                  로그인으로 돌아가기
-                </Link>
-              </p>
-            </>
-          )}
-        </div>
-      </div>
-    </div>
+          </form>
+        </>
+      )}
+    </AuthShell>
   )
 }

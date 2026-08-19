@@ -4,6 +4,7 @@ import { useState, useRef } from 'react'
 import { SURVEY_MOCK_DATA } from '@/lib/salary-survey/mockData'
 import type { SurveyRecord, SurveyYear } from '@/lib/salary-survey/mockData'
 import { formatKRW } from '@/lib/salary-survey/utils'
+import { PageHeader } from '@/components/ui/Form'
 
 // ── CSV Parser ─────────────────────────────────────────────────────────────
 
@@ -11,7 +12,7 @@ function parseCSV(text: string): Omit<SurveyRecord, 'id'>[] {
   const lines = text.trim().split('\n')
   if (lines.length < 2) return []
   const headers = lines[0].split(',').map(h => h.trim().replace(/"/g, ''))
-  return lines.slice(1).map((line, i) => {
+  return lines.slice(1).map(line => {
     const vals = line.split(',').map(v => v.trim().replace(/"/g, ''))
     const row: Record<string, string> = {}
     headers.forEach((h, idx) => { row[h] = vals[idx] || '' })
@@ -40,6 +41,19 @@ function statsByYear(data: SurveyRecord[]) {
     return { year: y, count: subset.length, avgBase }
   })
 }
+
+const CSV_FIELDS: [string, string, string, string][] = [
+  ['surveyYear', 'number', '2026', '조사 연도'],
+  ['industry', 'string', '생명보험', '보험권역 (MAIN_SPECIALIZATIONS 값 사용)'],
+  ['function', 'string', '계리평가 - 결산', '직무분야 (DETAILED_SPECIALTIES 값 사용)'],
+  ['location', 'string', 'Seoul', 'Seoul / Korea / Remote / Global'],
+  ['credential', 'string', 'ASA', 'Student / ASA / FSA / KAA / Other'],
+  ['companyType', 'string', '보험사', '보험사 / 컨설팅 / 회계법인 / 헤드헌팅/리크루팅 / 기타'],
+  ['yearsExperience', 'number', '5', '경력 연수 (소수점 가능)'],
+  ['baseSalary', 'number', '90000000', '연간 기본급 (KRW)'],
+  ['totalComp', 'number', '105000000', '연간 총보상 (KRW, 보너스 포함)'],
+  ['bonusRatio', 'number', '0.17', '보너스 비율 (0.0~1.0, 예: 17% → 0.17)'],
+]
 
 // ── Component ─────────────────────────────────────────────────────────────
 
@@ -106,44 +120,41 @@ export default function AdminSalarySurveyPage() {
   }
 
   return (
-    <div className="p-8 max-w-5xl mx-auto space-y-8">
-      {/* Header */}
-      <div>
-        <h1 className="text-xl font-bold text-gray-900">Salary Survey 데이터 관리</h1>
-        <p className="text-sm text-gray-500 mt-1">
-          연도별 설문 데이터를 CSV로 업로드하고 관리합니다.
-        </p>
-      </div>
+    <div className="container">
+      <PageHeader
+        index="Admin / Salary"
+        title="Survey data."
+        description="연도별 설문 데이터를 CSV로 업로드하고 관리합니다."
+      />
 
       {/* Existing datasets */}
-      <div className="bg-white rounded-xl border border-gray-200 p-6">
-        <h2 className="text-sm font-semibold text-gray-900 mb-4">등록된 데이터셋</h2>
+      <section className="mt-16">
+        <p className="label-sm border-b border-line-strong pb-4">등록된 데이터셋</p>
         <div className="overflow-x-auto">
-          <table className="w-full text-sm">
+          <table className="w-full min-w-[640px] text-left">
             <thead>
-              <tr className="border-b border-gray-100">
-                <th className="text-left pb-2 text-xs text-gray-500 font-medium">조사 연도</th>
-                <th className="text-left pb-2 text-xs text-gray-500 font-medium">응답 수</th>
-                <th className="text-left pb-2 text-xs text-gray-500 font-medium">평균 Base (참고)</th>
-                <th className="text-left pb-2 text-xs text-gray-500 font-medium">상태</th>
-                <th className="text-right pb-2 text-xs text-gray-500 font-medium">액션</th>
+              <tr className="table-head">
+                <th className="py-4 font-semibold">Year</th>
+                <th className="py-4 font-semibold">Responses</th>
+                <th className="py-4 font-semibold">Avg base</th>
+                <th className="py-4 font-semibold">Status</th>
+                <th className="py-4 text-right font-semibold">Action</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-50">
+            <tbody>
               {stats.map(s => (
-                <tr key={s.year} className="hover:bg-gray-50">
-                  <td className="py-3 font-semibold text-gray-900">{s.year} Survey</td>
-                  <td className="py-3 text-gray-600">{s.count}명</td>
-                  <td className="py-3 text-gray-600">{formatKRW(s.avgBase, true)}</td>
-                  <td className="py-3">
-                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs bg-green-50 text-green-700 border border-green-100">
-                      <span className="w-1.5 h-1.5 rounded-full bg-green-500" />
-                      게시 중
-                    </span>
+                <tr key={s.year} className="border-b border-line transition-colors hover:bg-bg-strong">
+                  <td className="py-5 text-[1rem] font-semibold tracking-[-0.02em] text-ink">
+                    {s.year} Survey
                   </td>
-                  <td className="py-3 text-right">
-                    <button className="text-xs text-gray-400 hover:text-red-500 transition-colors">
-                      삭제
+                  <td className="body-sm py-5 tabular-nums">{s.count}</td>
+                  <td className="body-sm py-5 tabular-nums">{formatKRW(s.avgBase, true)}</td>
+                  <td className="py-5">
+                    <span className="tag">게시 중</span>
+                  </td>
+                  <td className="py-5 text-right">
+                    <button type="button" className="btn-text">
+                      Delete
                     </button>
                   </td>
                 </tr>
@@ -151,189 +162,145 @@ export default function AdminSalarySurveyPage() {
             </tbody>
           </table>
         </div>
-      </div>
+      </section>
 
       {/* Upload section */}
-      <div className="bg-white rounded-xl border border-gray-200 p-6 space-y-5">
-        <div className="flex items-start justify-between">
-          <div>
-            <h2 className="text-sm font-semibold text-gray-900">새 데이터셋 업로드</h2>
-            <p className="text-xs text-gray-500 mt-0.5">CSV 파일을 업로드하여 연도별 설문 데이터를 추가합니다.</p>
-          </div>
-          <button
-            onClick={downloadTemplate}
-            className="text-xs text-[#2563EB] hover:underline flex items-center gap-1"
-          >
-            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-            </svg>
+      <section className="mt-20">
+        <div className="flex flex-wrap items-baseline justify-between gap-4 border-b border-line-strong pb-4">
+          <p className="label-sm">새 데이터셋 업로드</p>
+          <button type="button" onClick={downloadTemplate} className="btn-text">
             CSV 템플릿 다운로드
           </button>
         </div>
 
-        {/* Year selector */}
-        <div className="flex items-center gap-3">
-          <label className="text-xs font-medium text-gray-700 shrink-0">조사 연도</label>
-          <select
-            value={uploadYear}
-            onChange={e => setUploadYear(parseInt(e.target.value) as SurveyYear)}
-            className="text-sm border border-gray-200 rounded-lg px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-[#2563EB]"
-          >
-            <option value={2025}>2025 Survey</option>
-            <option value={2026}>2026 Survey</option>
-          </select>
-        </div>
-
-        {/* Drop zone */}
-        {status === 'idle' || status === 'error' ? (
-          <label className="flex flex-col items-center justify-center border-2 border-dashed border-gray-200 rounded-xl p-10 cursor-pointer hover:border-[#2563EB] hover:bg-blue-50/30 transition-colors">
-            <svg className="w-8 h-8 text-gray-300 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
-            </svg>
-            <p className="text-sm font-medium text-gray-700">CSV 파일을 선택하세요</p>
-            <p className="text-xs text-gray-400 mt-1">또는 여기에 드래그 앤 드롭</p>
-            {status === 'error' && (
-              <p className="text-xs text-red-500 mt-2">{errorMsg}</p>
-            )}
-            <input
-              ref={fileRef}
-              type="file"
-              accept=".csv"
-              className="hidden"
-              onChange={handleFile}
-            />
-          </label>
-        ) : null}
-
-        {status === 'parsing' && (
-          <div className="flex items-center justify-center py-10 gap-3 text-sm text-gray-500">
-            <svg className="animate-spin w-4 h-4 text-[#2563EB]" fill="none" viewBox="0 0 24 24">
-              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
-            </svg>
-            파일 파싱 중...
+        <div className="mt-8 space-y-8">
+          {/* Year selector */}
+          <div className="max-w-[240px]">
+            <label htmlFor="upload-year" className="form-label">
+              조사 연도
+            </label>
+            <select
+              id="upload-year"
+              value={uploadYear}
+              onChange={e => setUploadYear(parseInt(e.target.value) as SurveyYear)}
+              className="field"
+            >
+              <option value={2025}>2025 Survey</option>
+              <option value={2026}>2026 Survey</option>
+            </select>
           </div>
-        )}
 
-        {status === 'saved' && (
-          <div className="flex items-center gap-2 px-4 py-3 bg-green-50 border border-green-100 rounded-lg text-sm text-green-700">
-            <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-              <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-            </svg>
-            데이터가 저장되었습니다.
-            <button onClick={reset} className="ml-auto text-xs text-green-600 hover:underline">새 파일 업로드</button>
-          </div>
-        )}
+          {/* Drop zone */}
+          {(status === 'idle' || status === 'error') && (
+            <label className="block cursor-pointer border border-dashed border-line-strong px-8 py-14 text-center transition-colors hover:border-ink">
+              <p className="label-sm">CSV</p>
+              <p className="h4 mt-3">파일을 선택하세요</p>
+              <p className="body-sm mt-2 text-[0.85rem]">또는 여기에 드래그 앤 드롭</p>
+              {status === 'error' && <p className="notice-quiet mt-6 text-left">{errorMsg}</p>}
+              <input ref={fileRef} type="file" accept=".csv" className="hidden" onChange={handleFile} />
+            </label>
+          )}
 
-        {/* Preview table */}
-        {preview !== null && (status === 'ready' || status === 'saving') && (
-          <div className="space-y-4">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                </svg>
-                <span className="text-sm font-medium text-gray-700">{fileName}</span>
-                <span className="text-xs text-gray-400">{preview.length}행 파싱됨</span>
+          {status === 'parsing' && <p className="label-sm py-10">Parsing…</p>}
+
+          {status === 'saved' && (
+            <div className="notice flex flex-wrap items-center justify-between gap-4">
+              <span>데이터가 저장되었습니다.</span>
+              <button type="button" onClick={reset} className="btn-text">
+                새 파일 업로드
+              </button>
+            </div>
+          )}
+
+          {/* Preview table */}
+          {preview !== null && (status === 'ready' || status === 'saving') && (
+            <div className="space-y-6">
+              <div className="flex flex-wrap items-baseline justify-between gap-4 border-b border-line pb-4">
+                <span className="flex flex-wrap items-baseline gap-4">
+                  <span className="text-[1rem] font-medium text-ink">{fileName}</span>
+                  <span className="num">{preview.length} rows</span>
+                </span>
+                <button type="button" onClick={reset} className="btn-text">
+                  Cancel
+                </button>
               </div>
-              <button onClick={reset} className="text-xs text-gray-400 hover:text-gray-600">취소</button>
-            </div>
 
-            {/* Preview rows */}
-            <div className="overflow-x-auto rounded-lg border border-gray-200">
-              <table className="w-full text-xs">
-                <thead className="bg-gray-50">
-                  <tr>
-                    {['연도', '보험권역', '직무분야', '지역', '자격', '회사유형', '연차', 'Base', 'Total'].map(h => (
-                      <th key={h} className="text-left px-3 py-2 text-gray-500 font-medium">{h}</th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-gray-50">
-                  {preview.slice(0, 10).map((r, i) => (
-                    <tr key={i} className="hover:bg-gray-50">
-                      <td className="px-3 py-2 text-gray-600">{r.surveyYear}</td>
-                      <td className="px-3 py-2 text-gray-600">{r.industry}</td>
-                      <td className="px-3 py-2 text-gray-600 max-w-[120px] truncate">{r.function}</td>
-                      <td className="px-3 py-2 text-gray-600">{r.location}</td>
-                      <td className="px-3 py-2 text-gray-600">{r.credential}</td>
-                      <td className="px-3 py-2 text-gray-600">{r.companyType}</td>
-                      <td className="px-3 py-2 text-gray-600">{r.yearsExperience}년</td>
-                      <td className="px-3 py-2 text-gray-600">{formatKRW(r.baseSalary, true)}</td>
-                      <td className="px-3 py-2 text-gray-600">{formatKRW(r.totalComp, true)}</td>
+              <div className="overflow-x-auto">
+                <table className="w-full min-w-[860px] text-left">
+                  <thead>
+                    <tr className="table-head">
+                      {['연도', '보험권역', '직무분야', '지역', '자격', '회사유형', '연차', 'Base', 'Total'].map(h => (
+                        <th key={h} className="py-3 pr-4 font-semibold">
+                          {h}
+                        </th>
+                      ))}
                     </tr>
-                  ))}
-                </tbody>
-              </table>
-              {preview.length > 10 && (
-                <p className="text-xs text-center text-gray-400 py-2 border-t border-gray-100">
-                  +{preview.length - 10}행 더 있음 (최초 10행 미리보기)
-                </p>
-              )}
-            </div>
-
-            <div className="flex justify-end gap-3">
-              <button
-                onClick={reset}
-                className="px-4 py-2 text-sm text-gray-600 border border-gray-200 rounded-lg hover:bg-gray-50"
-              >
-                취소
-              </button>
-              <button
-                onClick={handleSave}
-                disabled={status === 'saving'}
-                className="px-4 py-2 text-sm font-medium bg-[#2563EB] text-white rounded-lg hover:opacity-90 disabled:opacity-50 flex items-center gap-2"
-              >
-                {status === 'saving' && (
-                  <svg className="animate-spin w-3.5 h-3.5" fill="none" viewBox="0 0 24 24">
-                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
-                  </svg>
+                  </thead>
+                  <tbody>
+                    {preview.slice(0, 10).map((r, i) => (
+                      <tr key={i} className="border-b border-line">
+                        <td className="body-sm py-3 pr-4 text-[0.85rem] tabular-nums">{r.surveyYear}</td>
+                        <td className="body-sm py-3 pr-4 text-[0.85rem]">{r.industry}</td>
+                        <td className="body-sm max-w-[160px] truncate py-3 pr-4 text-[0.85rem]">{r.function}</td>
+                        <td className="body-sm py-3 pr-4 text-[0.85rem]">{r.location}</td>
+                        <td className="body-sm py-3 pr-4 text-[0.85rem]">{r.credential}</td>
+                        <td className="body-sm py-3 pr-4 text-[0.85rem]">{r.companyType}</td>
+                        <td className="body-sm py-3 pr-4 text-[0.85rem] tabular-nums">{r.yearsExperience}년</td>
+                        <td className="body-sm py-3 pr-4 text-[0.85rem] tabular-nums">{formatKRW(r.baseSalary, true)}</td>
+                        <td className="body-sm py-3 text-[0.85rem] tabular-nums">{formatKRW(r.totalComp, true)}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+                {preview.length > 10 && (
+                  <p className="label-sm py-4">+{preview.length - 10} rows (최초 10행 미리보기)</p>
                 )}
-                {uploadYear} Survey 데이터 저장
-              </button>
+              </div>
+
+              <div className="flex flex-wrap gap-4">
+                <button
+                  type="button"
+                  onClick={handleSave}
+                  disabled={status === 'saving'}
+                  className="btn"
+                >
+                  {status === 'saving' ? '저장 중' : `${uploadYear} Survey 데이터 저장`}
+                </button>
+                <button type="button" onClick={reset} className="btn btn-ghost">
+                  취소
+                </button>
+              </div>
             </div>
-          </div>
-        )}
-      </div>
+          )}
+        </div>
+      </section>
 
       {/* Field reference */}
-      <div className="bg-white rounded-xl border border-gray-200 p-6">
-        <h2 className="text-sm font-semibold text-gray-900 mb-3">CSV 필드 안내</h2>
+      <section className="mt-20">
+        <p className="label-sm border-b border-line-strong pb-4">CSV 필드 안내</p>
         <div className="overflow-x-auto">
-          <table className="w-full text-xs">
+          <table className="w-full min-w-[720px] text-left">
             <thead>
-              <tr className="border-b border-gray-100">
-                <th className="text-left pb-2 text-gray-500 font-medium">필드명</th>
-                <th className="text-left pb-2 text-gray-500 font-medium">타입</th>
-                <th className="text-left pb-2 text-gray-500 font-medium">예시</th>
-                <th className="text-left pb-2 text-gray-500 font-medium">설명</th>
+              <tr className="table-head">
+                <th className="py-4 font-semibold">Field</th>
+                <th className="py-4 font-semibold">Type</th>
+                <th className="py-4 font-semibold">Example</th>
+                <th className="py-4 font-semibold">Description</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-50">
-              {[
-                ['surveyYear', 'number', '2026', '조사 연도'],
-                ['industry', 'string', '생명보험', '보험권역 (MAIN_SPECIALIZATIONS 값 사용)'],
-                ['function', 'string', '계리평가 - 결산', '직무분야 (DETAILED_SPECIALTIES 값 사용)'],
-                ['location', 'string', 'Seoul', 'Seoul / Korea / Remote / Global'],
-                ['credential', 'string', 'ASA', 'Student / ASA / FSA / KAA / Other'],
-                ['companyType', 'string', '보험사', '보험사 / 컨설팅 / 회계법인 / 헤드헌팅/리크루팅 / 기타'],
-                ['yearsExperience', 'number', '5', '경력 연수 (소수점 가능)'],
-                ['baseSalary', 'number', '90000000', '연간 기본급 (KRW)'],
-                ['totalComp', 'number', '105000000', '연간 총보상 (KRW, 보너스 포함)'],
-                ['bonusRatio', 'number', '0.17', '보너스 비율 (0.0~1.0, 예: 17% → 0.17)'],
-              ].map(([field, type, example, desc]) => (
-                <tr key={field}>
-                  <td className="py-2 font-mono text-gray-800">{field}</td>
-                  <td className="py-2 text-gray-500">{type}</td>
-                  <td className="py-2 text-gray-500">{example}</td>
-                  <td className="py-2 text-gray-500">{desc}</td>
+            <tbody>
+              {CSV_FIELDS.map(([field, type, example, desc]) => (
+                <tr key={field} className="border-b border-line">
+                  <td className="py-3.5 pr-6 font-mono text-[0.86rem] text-ink">{field}</td>
+                  <td className="body-sm py-3.5 pr-6 text-[0.85rem]">{type}</td>
+                  <td className="body-sm py-3.5 pr-6 text-[0.85rem]">{example}</td>
+                  <td className="body-sm py-3.5 text-[0.85rem]">{desc}</td>
                 </tr>
               ))}
             </tbody>
           </table>
         </div>
-      </div>
+      </section>
     </div>
   )
 }

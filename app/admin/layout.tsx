@@ -2,6 +2,16 @@ import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/server'
 
+const NAV = [
+  { href: '/admin', label: 'Overview' },
+  { href: '/admin/users', label: 'Users' },
+  { href: '/admin/jobs', label: 'Jobs' },
+  { href: '/admin/taxonomy', label: 'Taxonomy' },
+  { href: '/admin/waitlist', label: 'Waitlist' },
+  { href: '/admin/salary-survey', label: 'Salary' },
+  { href: '/admin/ai-import', label: 'AI Import' },
+]
+
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
@@ -17,43 +27,20 @@ export default async function AdminLayout({ children }: { children: React.ReactN
   if (!profile || profile.role !== 'admin') redirect('/')
 
   return (
-    <div className="flex min-h-screen bg-gray-50">
-      {/* 사이드바 */}
-      <aside className="w-56 bg-[#0B1F3A] text-white flex flex-col shrink-0">
-        <div className="p-6 border-b border-white/10">
-          <Link href="/" className="text-lg font-bold">Finquara</Link>
-          <p className="text-xs text-white/50 mt-0.5">관리자 패널</p>
-        </div>
-        <nav className="flex-1 p-4 space-y-1">
-          {[
-            { href: '/admin', label: '대시보드' },
-            { href: '/admin/users', label: '회원 관리' },
-            { href: '/admin/jobs', label: '채용공고 관리' },
-            { href: '/admin/taxonomy', label: '분야 관리' },
-            { href: '/admin/waitlist', label: '대기목록' },
-            { href: '/admin/salary-survey', label: 'Salary Survey' },
-            { href: '/admin/ai-import', label: '🤖 AI 공고 수집' },
-          ].map(item => (
-            <Link
-              key={item.href}
-              href={item.href}
-              className="block px-3 py-2 rounded-lg text-sm text-white/80 hover:bg-white/10 hover:text-white transition-colors"
-            >
+    <>
+      {/* 관리자 서브 내비 — 사이드바 대신 헤더 아래 가로 괘선 */}
+      <div className="sticky top-[72px] z-50 border-b border-line bg-bg-strong/80 backdrop-blur-[18px]">
+        <div className="container flex items-center gap-x-7 gap-y-2 overflow-x-auto py-3.5">
+          <span className="label-sm whitespace-nowrap opacity-60">Admin</span>
+          {NAV.map(item => (
+            <Link key={item.href} href={item.href} className="label-sm link whitespace-nowrap">
               {item.label}
             </Link>
           ))}
-        </nav>
-        <div className="p-4 border-t border-white/10">
-          <Link href="/" className="text-xs text-white/40 hover:text-white/70 transition-colors">
-            ← 사이트로 돌아가기
-          </Link>
         </div>
-      </aside>
+      </div>
 
-      {/* 메인 콘텐츠 */}
-      <main className="flex-1 overflow-auto">
-        {children}
-      </main>
-    </div>
+      <main className="section-tight">{children}</main>
+    </>
   )
 }

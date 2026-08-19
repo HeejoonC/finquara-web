@@ -1,11 +1,22 @@
 import type { Metadata } from "next";
-import { Geist } from "next/font/google";
+import { Inter, Noto_Sans_KR } from "next/font/google";
 import "./globals.css";
 import Navbar from "@/components/Navbar";
+import Footer from "@/components/Footer";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+const inter = Inter({
+  variable: "--font-inter",
   subsets: ["latin"],
+  weight: ["400", "500", "600", "700", "800", "900"],
+  display: "swap",
+});
+
+const notoSansKr = Noto_Sans_KR({
+  variable: "--font-noto-kr",
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700", "800"],
+  display: "swap",
+  preload: false,
 });
 
 export const metadata: Metadata = {
@@ -20,9 +31,10 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="ko">
-      <body className={`${geistSans.variable} antialiased bg-gray-50`}>
+      <body className={`${inter.variable} ${notoSansKr.variable} antialiased`}>
         <Navbar />
-        {children}
+        <div className="min-h-[60vh]">{children}</div>
+        <Footer />
       </body>
     </html>
   );
